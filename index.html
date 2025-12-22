@@ -161,11 +161,18 @@
             margin-top: 5px;
         }
         
+        /* 修改颜色选择器为2行3列布局 */
         .color-picker {
             display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 8px;
             margin-top: 12px;
+        }
+        
+        .color-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
         }
         
         .color-option {
@@ -175,6 +182,7 @@
             cursor: pointer;
             border: 2px solid transparent;
             transition: transform 0.2s ease;
+            flex-shrink: 0;
         }
         
         .color-option:hover {
@@ -322,7 +330,7 @@
         @media (max-width: 768px) {
             .card {
                 width: 160px;
-                min-height: 130px;
+                min-height: 140px;
             }
             
             h1 {
@@ -336,6 +344,11 @@
             
             .line-type-selector {
                 width: 240px;
+            }
+            
+            .color-option {
+                width: 20px;
+                height: 20px;
             }
         }
     </style>
@@ -387,7 +400,7 @@
                 <p><strong>项目管理之舟</strong>是一个互动式的项目管理知识图谱构建工具。</p>
                 <ul style="margin-left: 20px; margin-bottom: 20px;">
                     <li><strong>移动卡片</strong>：拖动卡片到任意位置</li>
-                    <li><strong>更改颜色</strong>：点击卡片下方的颜色圆点</li>
+                    <li><strong>更改颜色</strong>：点击卡片下方的颜色圆点（每行3个，共2行）</li>
                     <li><strong>创建连线</strong>：点击卡片边缘的连接点，然后点击另一个卡片的连接点</li>
                     <li><strong>选择连线类型</strong>：使用左侧的连线工具选择直线、箭头或折线</li>
                     <li><strong>添加注释</strong>：在连线工具中输入文字，创建连线时会自动添加</li>
@@ -506,6 +519,37 @@
                 card.style.top = `${positions[index].top}%`;
                 card.style.backgroundColor = colorOptions[index % colorOptions.length];
                 
+                // 创建2行3列的颜色选择器
+                let colorPickerHTML = '<div class="color-picker">';
+                
+                // 第一行（前3个颜色）
+                colorPickerHTML += '<div class="color-row">';
+                for (let i = 0; i < 3; i++) {
+                    const color = colorOptions[i];
+                    const isSelected = (index % colorOptions.length) === i;
+                    colorPickerHTML += `
+                        <div class="color-option ${isSelected ? 'selected' : ''}" 
+                             style="background-color: ${color}" 
+                             data-color="${color}" data-index="${i}"></div>
+                    `;
+                }
+                colorPickerHTML += '</div>';
+                
+                // 第二行（后3个颜色）
+                colorPickerHTML += '<div class="color-row">';
+                for (let i = 3; i < 6; i++) {
+                    const color = colorOptions[i];
+                    const isSelected = (index % colorOptions.length) === i;
+                    colorPickerHTML += `
+                        <div class="color-option ${isSelected ? 'selected' : ''}" 
+                             style="background-color: ${color}" 
+                             data-color="${color}" data-index="${i}"></div>
+                    `;
+                }
+                colorPickerHTML += '</div>';
+                
+                colorPickerHTML += '</div>';
+                
                 card.innerHTML = `
                     <div class="card-header">
                         <div>
@@ -513,13 +557,7 @@
                             <div class="card-subtitle">${cardData.subtitle}</div>
                         </div>
                     </div>
-                    <div class="color-picker">
-                        ${colorOptions.map((color, i) => `
-                            <div class="color-option ${i === index % colorOptions.length ? 'selected' : ''}" 
-                                 style="background-color: ${color}" 
-                                 data-color="${color}"></div>
-                        `).join('')}
-                    </div>
+                    ${colorPickerHTML}
                     <div class="connection-points">
                         <div class="connection-point" data-side="top" style="top: 0; left: 50%;"></div>
                         <div class="connection-point" data-side="right" style="top: 50%; left: 100%;"></div>
