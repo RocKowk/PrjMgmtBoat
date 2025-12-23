@@ -1,1571 +1,1366 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>项目管理之舟</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* 重置与基础样式 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        html, body {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            position: fixed;
-            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
-        /* 容器布局 */
-        .container {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        /* 顶部导航栏 */
-        header {
-            background-color: rgba(255, 255, 255, 0.98);
-            padding: 10px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            z-index: 100;
-            position: relative;
-            min-height: 56px;
-            flex-shrink: 0;
-        }
-        
-        h1 {
-            color: #1a2980;
-            font-size: 1.4rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 700;
-        }
-        
-        h1 i {
-            color: #26d0ce;
-            font-size: 1.3rem;
-        }
-        
-        .controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        /* 按钮样式 */
-        button {
-            background-color: #1a2980;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.3s ease;
-            font-size: 0.85rem;
-            white-space: nowrap;
-            min-height: 36px;
-        }
-        
-        button:active {
-            background-color: #2a3cb0;
-            transform: scale(0.98);
-        }
-        
-        button#deleteLineBtn {
-            background-color: #e74c3c;
-        }
-        
-        button#deleteLineBtn:active {
-            background-color: #c0392b;
-        }
-        
-        /* 主要内容区域 */
-        .content {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-            height: calc(100vh - 76px);
-        }
-        
-        /* Canvas用于绘制连线 */
-        #canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-        }
-        
-        /* 卡片容器 */
-        .cards-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            pointer-events: none;
-        }
-        
-        /* 卡片样式 */
-        .card {
-            position: absolute;
-            width: 150px;
-            min-height: 130px;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-            padding: 12px;
-            cursor: move;
-            pointer-events: auto;
-            transition: box-shadow 0.3s ease, transform 0.2s ease;
-            user-select: none;
-            z-index: 10;
-            -webkit-user-drag: none;
-        }
-        
-        .card:active {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-            transform: scale(1.02);
-        }
-        
-        .card.dragging {
-            opacity: 0.95;
-            z-index: 100;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-        }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-        }
-        
-        .card-title {
-            font-weight: 700;
-            font-size: 0.9rem;
-            line-height: 1.25;
-            word-break: break-word;
-        }
-        
-        .card-subtitle {
-            font-weight: 600;
-            font-size: 0.8rem;
-            margin-top: 4px;
-        }
-        
-        /* 颜色选择器 - 2行3列布局 */
-        .color-picker {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-top: 10px;
-        }
-        
-        .color-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 4px;
-        }
-        
-        .color-option {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: transform 0.2s ease;
-            flex-shrink: 0;
-        }
-        
-        .color-option:active {
-            transform: scale(1.2);
-        }
-        
-        .color-option.selected {
-            border-color: #333;
-            transform: scale(1.1);
-        }
-        
-        /* 连接点样式 */
-        .connection-points {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-        }
-        
-        .connection-point {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            background-color: rgba(26, 41, 128, 0.8);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: auto;
-            cursor: pointer;
-            z-index: 5;
-            border: 2px solid white;
-            transition: transform 0.2s ease, background-color 0.2s ease;
-        }
-        
-        .connection-point:active {
-            background-color: #1a2980;
-            transform: translate(-50%, -50%) scale(1.3);
-        }
-        
-        /* 连线工具面板 */
-        .line-type-selector {
-            position: absolute;
-            bottom: 16px;
-            left: 16px;
-            background-color: rgba(255, 255, 255, 0.98);
-            padding: 12px;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-            z-index: 50;
-            width: 220px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-        
-        .line-type-selector h3 {
-            margin-bottom: 10px;
-            color: #1a2980;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .line-type-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        
-        .line-type-btn {
-            padding: 7px 10px;
-            background-color: #f0f0f0;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.2s ease;
-            min-width: 60px;
-            text-align: center;
-        }
-        
-        .line-type-btn:active {
-            background-color: #e0e0e0;
-            transform: scale(0.98);
-        }
-        
-        .line-type-btn.active {
-            background-color: #1a2980;
-            color: white;
-        }
-        
-        .annotation-input {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            background-color: #f9f9f9;
-        }
-        
-        .annotation-input:focus {
-            outline: none;
-            border-color: #1a2980;
-            background-color: white;
-        }
-        
-        /* 模态框 */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.85);
-            z-index: 200;
-            justify-content: center;
-            align-items: center;
-            padding: 16px;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-        }
-        
-        .modal-content {
-            background-color: white;
-            padding: 24px;
-            border-radius: 16px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            max-height: 80vh;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .modal h2 {
-            color: #1a2980;
-            margin-bottom: 12px;
-            font-size: 1.3rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .modal p {
-            margin-bottom: 16px;
-            line-height: 1.5;
-            font-size: 0.9rem;
-        }
-        
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-        
-        .export-options {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 20px;
-        }
-        
-        /* 页脚 */
-        footer {
-            text-align: center;
-            padding: 8px 16px;
-            background-color: rgba(255, 255, 255, 0.9);
-            font-size: 0.75rem;
-            color: #666;
-            z-index: 100;
-            position: relative;
-            line-height: 1.4;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        
-        /* iPhone 13 Mini 横屏优化 */
-        @media (orientation: landscape) and (max-height: 400px) {
-            .card {
-                width: 140px;
-                min-height: 120px;
-                padding: 10px;
-            }
-            
-            .card-title {
-                font-size: 0.85rem;
-            }
-            
-            .card-subtitle {
-                font-size: 0.75rem;
-            }
-            
-            .color-option {
-                width: 18px;
-                height: 18px;
-            }
-            
-            .line-type-selector {
-                width: 200px;
-                padding: 10px;
-            }
-            
-            .line-type-btn {
-                padding: 6px 8px;
-                font-size: 0.75rem;
-                min-width: 55px;
-            }
-            
-            header {
-                padding: 8px 12px;
-                min-height: 48px;
-            }
-            
-            h1 {
-                font-size: 1.2rem;
-            }
-            
-            button {
-                padding: 6px 10px;
-                font-size: 0.8rem;
-                min-height: 32px;
-            }
-            
-            .content {
-                height: calc(100vh - 64px);
-            }
-        }
-        
-        /* 防止横屏时字体过大 */
-        @media (orientation: landscape) and (min-width: 812px) {
-            html {
-                font-size: 14px;
-            }
-        }
-        
-        /* 高DPI屏幕优化 */
-        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-            .card {
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            }
-            
-            .line-type-selector {
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            }
-        }
-        
-        /* 状态指示器 */
-        .status-indicator {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            color: #1a2980;
-            z-index: 50;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#1e3a8a" />
+  <meta name="description" content="项目管理之舟 - 专为小屏设备优化的项目管理可视化工具" />
+  <title>项目管理之舟</title>
+
+  <!-- PWA Manifest (内联) -->
+  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIueVmeaKpeWtpuivvyIsCiAgInNob3J0X25hbWUiOiAi55WZ5oql5a2m6K%2F%2FIiwKICAic3RhcnRfdXJsIjogIi4vIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMWUzYThhIiwKICAidGhlbWVfY29sb3IiOiAiIzFlM2E4YSIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIj48cGF0aCBmaWxsPSIjMWUzYThhIiBkPSJNMCAwaDE5MnYxOTJIMHoiLz48dGV4dCB4PSI5NiIgeT0iOTYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI0MCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPuWVmeaKpeWtpuivvyAgPC90ZXh0Pjwvc3ZnPg==IiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQo=">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
+      color: white;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .orientation-alert {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .orientation-alert h2 {
+      font-size: 2rem;
+      margin-bottom: 15px;
+      color: #60a5fa;
+    }
+
+    .orientation-alert p {
+      font-size: 1.2rem;
+      color: #cbd5e1;
+      max-width: 90%;
+    }
+
+    .container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: none;
+      overflow: hidden;
+    }
+
+    .card {
+      position: absolute;
+      width: 110px;
+      height: 95px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 6px;
+      text-align: center;
+      cursor: grab;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+      border: 2px solid #60a5fa;
+      transition: transform 0.2s, box-shadow 0.2s;
+      z-index: 10;
+      backface-visibility: hidden;
+      will-change: transform;
+    }
+
+    .card.dragging {
+      transform: scale(1.05);
+      z-index: 20;
+      box-shadow: 0 0 0 3px #fbbf24, 0 0 15px rgba(251, 191, 36, 0.6);
+    }
+
+    .card:active {
+      cursor: grabbing;
+    }
+
+    .card-title {
+      font-weight: bold;
+      font-size: 0.95rem;
+      line-height: 1.3;
+      margin-bottom: 2px;
+    }
+
+    .card-sub {
+      font-size: 0.75rem;
+      line-height: 1.3;
+    }
+
+    .anchor-point {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(96, 165, 250, 0.6);
+      border: 2px solid white;
+      z-index: 15;
+      pointer-events: auto;
+      cursor: pointer;
+      display: none;
+    }
+
+    .toolbar {
+      position: absolute;
+      bottom: 15px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      z-index: 100;
+      padding: 0 10px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: 25px;
+      border: none;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      background: rgba(30, 58, 138, 0.92);
+      color: white;
+      border: 2px solid #60a5fa;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+      min-width: 100px;
+      touch-action: manipulation;
+      transition: all 0.2s;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn:hover {
+      background: rgba(59, 130, 246, 0.95);
+    }
+
+    .btn.delete-mode {
+      background: rgba(185, 28, 28, 0.95);
+      border-color: #f87171;
+    }
+
+    .color-picker {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #60a5fa;
+      border-radius: 12px;
+      padding: 12px 8px;
+      display: none;
+      z-index: 50;
+      box-shadow: 0 5px 18px rgba(0, 0, 0, 0.5);
+      min-width: 220px;
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+    }
+
+    .color-item {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid #60a5fa;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .color-item:hover, .color-item.selected {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 3px white;
+    }
+
+    .connections-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .connection-path {
+      pointer-events: auto !important;
+      cursor: pointer;
+    }
+
+    .connection-label {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid #60a5fa;
+      border-radius: 14px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      transform: translate(-50%, -50%);
+      pointer-events: auto;
+      cursor: pointer;
+      max-width: 120px;
+      text-align: center;
+      word-break: break-word;
+      z-index: 6;
+      touch-action: manipulation;
+    }
+
+    .connection-type-picker {
+      position: absolute;
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #60a5fa;
+      border-radius: 12px;
+      padding: 10px;
+      display: none;
+      z-index: 50;
+      box-shadow: 0 5px 18px rgba(0, 0, 0, 0.5);
+      min-width: 180px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .type-option {
+      padding: 8px 10px;
+      color: white;
+      cursor: pointer;
+      border-radius: 8px;
+      margin: 4px 0;
+      font-size: 0.9rem;
+      touch-action: manipulation;
+    }
+
+    .type-option:hover, .type-option.selected {
+      background: rgba(59, 130, 246, 0.6);
+    }
+
+    .export-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.92);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      touch-action: none;
+    }
+
+    .modal-content {
+      background: rgba(15, 23, 42, 0.97);
+      border: 2px solid #60a5fa;
+      border-radius: 18px;
+      padding: 25px;
+      width: 90%;
+      max-width: 380px;
+      text-align: center;
+    }
+
+    .modal-title {
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+      color: #60a5fa;
+    }
+
+    .export-options {
+      display: flex;
+      gap: 15px;
+      margin: 15px 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .export-option {
+      background: rgba(30, 58, 138, 0.8);
+      border: 1px solid #60a5fa;
+      border-radius: 12px;
+      padding: 12px;
+      width: 140px;
+      cursor: pointer;
+      transition: all 0.2s;
+      touch-action: manipulation;
+    }
+
+    .export-option:hover, .export-option:active {
+      background: rgba(59, 130, 246, 0.85);
+      transform: translateY(-2px);
+    }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      z-index: 300;
+      touch-action: none;
+    }
+
+    .spinner {
+      width: 35px;
+      height: 35px;
+      border: 3px solid rgba(96, 165, 250, 0.3);
+      border-top: 3px solid #60a5fa;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-size: 1.1rem;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    .status-bar-padding {
+      height: env(safe-area-inset-top);
+    }
+
+    .watermark {
+      position: absolute;
+      bottom: 8px;
+      right: 10px;
+      font-size: 0.75rem;
+      color: rgba(156, 163, 175, 0.8);
+      z-index: 1;
+    }
+
+    @media (max-aspect-ratio: 13/9) {
+      .orientation-alert {
+        display: flex;
+      }
+    }
+
+    /* 确保在 iOS 安全区域内 */
+    @supports (padding-top: env(safe-area-inset-top)) {
+      body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
+      
+      .toolbar {
+        bottom: calc(15px + env(safe-area-inset-bottom));
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-ship"></i> 项目管理之舟</h1>
-            <div class="controls">
-                <button id="helpBtn">
-                    <i class="fas fa-question-circle"></i> 帮助
-                </button>
-                <button id="deleteLineBtn">
-                    <i class="fas fa-trash-alt"></i> 删除连线
-                </button>
-                <button id="exportBtn">
-                    <i class="fas fa-download"></i> 导出
-                </button>
-            </div>
-        </header>
-        
-        <div class="content">
-            <canvas id="canvas"></canvas>
-            <div class="cards-container" id="cardsContainer">
-                <!-- 卡片将通过JS动态生成 -->
-            </div>
-            
-            <!-- 状态指示器 -->
-            <div class="status-indicator" id="statusIndicator">
-                <i class="fas fa-mouse-pointer"></i> <span>选择连接点创建连线</span>
-            </div>
-            
-            <!-- 连线工具面板 -->
-            <div class="line-type-selector">
-                <h3><i class="fas fa-project-diagram"></i> 连线工具</h3>
-                <div class="line-type-options">
-                    <div class="line-type-btn active" data-type="straight">直线</div>
-                    <div class="line-type-btn" data-type="straight-arrow">单向箭头</div>
-                    <div class="line-type-btn" data-type="straight-double-arrow">双向箭头</div>
-                    <div class="line-type-btn" data-type="polyline">折线</div>
-                    <div class="line-type-btn" data-type="polyline-arrow">折线箭头</div>
-                </div>
-                <input type="text" class="annotation-input" id="lineAnnotation" placeholder="输入连线注释文字...">
-            </div>
-        </div>
-        
-        <footer>
-            <p>拖动卡片移动位置 | 点击颜色圆点更改卡片底色 | 点击卡片边上的连接点创建连线</p>
-        </footer>
-        
-        <!-- 帮助模态框 -->
-        <div class="modal" id="helpModal">
-            <div class="modal-content">
-                <h2><i class="fas fa-life-ring"></i> 游戏使用说明</h2>
-                <p><strong>项目管理之舟</strong>是一个互动式的项目管理知识图谱构建工具。通过可视化方式展示项目管理各个领域之间的关系。</p>
-                <ul style="margin-left: 20px; margin-bottom: 20px; font-size: 0.9rem;">
-                    <li><strong>移动卡片</strong>：拖动卡片到任意位置</li>
-                    <li><strong>更改颜色</strong>：点击卡片下方的颜色圆点（每行3个，共2行）</li>
-                    <li><strong>创建连线</strong>：点击卡片边缘的连接点，然后点击另一个卡片的连接点</li>
-                    <li><strong>选择连线类型</strong>：使用左侧的连线工具选择直线、箭头或折线</li>
-                    <li><strong>添加注释</strong>：在连线工具中输入文字，创建连线时会自动添加</li>
-                    <li><strong>删除连线</strong>：点击"删除连线"按钮，然后点击要删除的连线</li>
-                    <li><strong>导出结果</strong>：点击"导出结果"按钮，可以保存为JPG图片或XML文件</li>
-                    <li><strong>颜色对比</strong>：卡片标题颜色会自动调整为与背景高对比度的颜色</li>
-                    <li><strong>连接点位置</strong>：只能在卡片四条边的中点位置连接</li>
-                </ul>
-                <div class="modal-buttons">
-                    <button id="closeHelpBtn">关闭</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 导出模态框 -->
-        <div class="modal" id="exportModal">
-            <div class="modal-content">
-                <h2><i class="fas fa-file-export"></i> 导出结果</h2>
-                <p>选择导出格式，将您的项目管理之舟图表保存到本地。</p>
-                <div class="export-options">
-                    <button id="exportJPG">
-                        <i class="fas fa-file-image"></i> 导出为JPG图片
-                    </button>
-                    <button id="exportXML">
-                        <i class="fas fa-file-code"></i> 导出为XML文件
-                    </button>
-                </div>
-                <div class="modal-buttons">
-                    <button id="closeExportBtn">取消</button>
-                </div>
-            </div>
-        </div>
+  <div class="orientation-alert">
+    <h2>📱 请横屏使用</h2>
+    <p>为了获得最佳体验，请将手机旋转至横屏模式</p>
+  </div>
+
+  <div class="container" id="container">
+    <div class="connections-container" id="connectionsContainer"></div>
+    <!-- Cards will be inserted by JS -->
+
+    <div class="toolbar">
+      <button class="btn" id="deleteBtn">删除连线</button>
+      <button class="btn" id="exportBtn">导出结果</button>
     </div>
 
-    <script>
-        // 卡片数据 - 包含标题和副标题
-        const cardsData = [
-            { id: 1, title: "花多长时间做？", subtitle: "进度管理" },
-            { id: 2, title: "如何实现整体最优？", subtitle: "整合管理" },
-            { id: 3, title: "如何才满意？", subtitle: "价值管理" },
-            { id: 4, title: "谁来做？", subtitle: "资源与采购管理" },
-            { id: 5, title: "按什么质量做？", subtitle: "质量管理" },
-            { id: 6, title: "做什么？", subtitle: "范围管理" },
-            { id: 7, title: "为谁做？", subtitle: "干系人管理" },
-            { id: 8, title: "如何协作？", subtitle: "沟通管理" },
-            { id: 9, title: "用多少成本做？", subtitle: "成本管理" },
-            { id: 10, title: "有哪些人/财/事会增加难度？", subtitle: "风险管理" }
-        ];
+    <div class="color-picker" id="colorPicker">
+      <div class="color-grid" id="colorGrid"></div>
+    </div>
 
-        // 6种显著区分的颜色选项
-        const colorOptions = [
-            '#FF6B6B', // 红色
-            '#4ECDC4', // 青绿色
-            '#FFD166', // 黄色
-            '#06D6A0', // 绿色
-            '#118AB2', // 蓝色
-            '#9D4EDD'  // 紫色
-        ];
+    <div class="connection-type-picker" id="typePicker">
+      <div class="type-option" data-type="straight-none">→ 直线（无箭头）</div>
+      <div class="type-option" data-type="straight-single">→ 直线（单向）</div>
+      <div class="type-option" data-type="straight-double">↔ 直线（双向）</div>
+      <div class="type-option" data-type="polyline-none">→ 折线（无箭头）</div>
+      <div class="type-option" data-type="polyline-single">→ 折线（单向）</div>
+      <div class="type-option" data-type="polyline-double">↔ 折线（双向）</div>
+    </div>
 
-        // 全局变量
-        let cards = [];
-        let connections = [];
-        let selectedLineType = 'straight';
-        let isDrawingLine = false;
-        let currentLineStart = null;
-        let isDeletingLine = false;
-        let canvas, ctx;
-        let draggedCard = null;
-        let dragOffsetX = 0, dragOffsetY = 0;
-        let isTouchDevice = false;
-        let lastTouchTime = 0;
+    <div class="watermark">项目管理之舟 v1.2</div>
+  </div>
 
-        // 颜色对比度计算工具
-        const ColorUtils = {
-            // 将十六进制颜色转换为RGB
-            hexToRgb: function(hex) {
-                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                return result ? {
-                    r: parseInt(result[1], 16),
-                    g: parseInt(result[2], 16),
-                    b: parseInt(result[3], 16)
-                } : null;
-            },
-            
-            // 计算颜色的亮度（相对亮度公式）
-            getLuminance: function(r, g, b) {
-                const a = [r, g, b].map(function(v) {
-                    v /= 255;
-                    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-                });
-                return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
-            },
-            
-            // 计算两种颜色之间的对比度
-            getContrastRatio: function(color1, color2) {
-                const rgb1 = this.hexToRgb(color1);
-                const rgb2 = this.hexToRgb(color2);
-                
-                if (!rgb1 || !rgb2) return 1;
-                
-                const lum1 = this.getLuminance(rgb1.r, rgb1.g, rgb1.b);
-                const lum2 = this.getLuminance(rgb2.r, rgb2.g, rgb2.b);
-                
-                const brightest = Math.max(lum1, lum2);
-                const darkest = Math.min(lum1, lum2);
-                
-                return (brightest + 0.05) / (darkest + 0.05);
-            },
-            
-            // 判断颜色是否为深色
-            isDarkColor: function(hexColor) {
-                const rgb = this.hexToRgb(hexColor);
-                if (!rgb) return false;
-                
-                // 计算亮度（YIQ公式）
-                const yiq = ((rgb.r * 299) + (rgb.g * 587) + (rgb.b * 114)) / 1000;
-                return yiq < 128;
-            },
-            
-            // 获取与背景色高对比度的文本颜色
-            getOptimizedTextColor: function(backgroundColor) {
-                const black = '#000000';
-                const white = '#FFFFFF';
-                
-                // 计算与黑色和白色的对比度
-                const contrastWithBlack = this.getContrastRatio(backgroundColor, black);
-                const contrastWithWhite = this.getContrastRatio(backgroundColor, white);
-                
-                // 选择对比度更高的颜色
-                if (contrastWithBlack >= contrastWithWhite && contrastWithBlack >= 4.5) {
-                    return black;
-                } else if (contrastWithWhite >= 4.5) {
-                    return white;
-                } else {
-                    // 如果对比度都不够，使用调整后的颜色
-                    return this.getEnhancedContrastColor(backgroundColor);
-                }
-            },
-            
-            // 获取增强对比度的颜色
-            getEnhancedContrastColor: function(backgroundColor) {
-                const rgb = this.hexToRgb(backgroundColor);
-                if (!rgb) return '#000000';
-                
-                // 计算背景亮度
-                const luminance = this.getLuminance(rgb.r, rgb.g, rgb.b);
-                
-                // 如果背景较亮，返回深灰色；如果背景较暗，返回浅灰色
-                if (luminance > 0.5) {
-                    return '#222222';
-                } else {
-                    return '#EEEEEE';
-                }
-            }
-        };
+  <div class="export-modal" id="exportModal">
+    <div class="modal-content">
+      <div class="modal-title">导出项目管理方案</div>
+      <p>请选择保存格式</p>
+      <div class="export-options">
+        <div class="export-option" id="exportJpg">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="#60a5fa"/>
+          </svg>
+          <div style="margin-top: 8px; font-weight: bold;">JPG 图片</div>
+        </div>
+        <div class="export-option" id="exportXml">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z" fill="#60a5fa"/>
+          </svg>
+          <div style="margin-top: 8px; font-weight: bold;">XML 数据</div>
+        </div>
+      </div>
+      <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 12px;">
+        文件将自动下载到您的设备
+      </p>
+    </div>
+  </div>
 
-        // 应用初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            // 检测是否为触摸设备
-            isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            initApp();
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">正在生成导出文件<br>请稍候...</div>
+  </div>
+
+  <!-- html2canvas for JPG export -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <script>
+    // Card data
+    const cards = [
+      { title: "花多长时间做？", sub: "进度管理" },
+      { title: "如何实现整体最优？", sub: "整合管理" },
+      { title: "如何才满意？", sub: "价值管理" },
+      { title: "谁来做？", sub: "资源与采购管理" },
+      { title: "按什么质量做？", sub: "质量管理" },
+      { title: "做什么？", sub: "范围管理" },
+      { title: "为谁做？", sub: "干系人管理" },
+      { title: "如何协作？", sub: "沟通管理" },
+      { title: "用多少成本做？", sub: "成本管理" },
+      { title: "有哪些人/财/事会增加难度？", sub: "风险管理" }
+    ];
+
+    // 6种显著区分的颜色
+    const colors = [
+      "#1e3a8a", // 深蓝
+      "#0d9488", // 青绿
+      "#c2410c", // 橙红
+      "#7e22ce", // 紫
+      "#0ea5e9", // 天蓝
+      "#ca8a04"  // 金黄
+    ];
+
+    // State
+    let state = {
+      cards: [],
+      connections: [],
+      selectedCard: null,
+      connectingCard: null,
+      deleteMode: false,
+      isDragging: false,
+      dragOffset: { x: 0, y: 0 },
+      tempConnection: null,
+      anchorStart: null, // 'top' | 'right' | 'bottom' | 'left'
+      anchorEnd: null,
+      lastColorSelection: {}
+    };
+
+    const container = document.getElementById('container');
+    const connectionsContainer = document.getElementById('connectionsContainer');
+    const colorPicker = document.getElementById('colorPicker');
+    const colorGrid = document.getElementById('colorGrid');
+    const typePicker = document.getElementById('typePicker');
+
+    // Init
+    function init() {
+      createCards();
+      createColorPicker();
+      setupEventListeners();
+      checkOrientation();
+      initWatermark();
+      
+      // 添加触摸反馈
+      document.body.addEventListener('touchstart', () => {}, { passive: true });
+    }
+
+    function createCards() {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      
+      // iPhone 13 mini 横屏约 643x320px，为10个卡片规划位置
+      const positions = [
+        { x: 40, y: 40 },     { x: 180, y: 40 },    { x: 320, y: 40 },    { x: 460, y: 40 },    { x: 600, y: 40 },
+        { x: 40, y: 180 },    { x: 180, y: 180 },   { x: 320, y: 180 },   { x: 460, y: 180 },   { x: 600, y: 180 }
+      ];
+      
+      // 确保位置在屏幕内
+      const cardW = 110, cardH = 95;
+      const padding = 15;
+      
+      cards.forEach((cardData, i) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.id = `card-${i}`;
+        
+        // 为前6张卡片分配预设位置，其余随机
+        let x, y;
+        if (i < positions.length) {
+          x = positions[i].x;
+          y = positions[i].y;
+          
+          // 确保卡片完全在屏幕内
+          x = Math.max(padding, Math.min(w - cardW - padding, x));
+          y = Math.max(padding, Math.min(h - cardH - padding, y));
+        } else {
+          x = padding + Math.random() * (w - 2 * padding - cardW);
+          y = padding + Math.random() * (h - 2 * padding - cardH);
+        }
+        
+        // 为每张卡片分配初始颜色（循环使用6种颜色）
+        const color = colors[i % colors.length];
+        card.style.backgroundColor = color;
+        
+        // 计算文字颜色
+        const textColor = getContrastTextColor(color);
+        card.style.color = textColor;
+        
+        // 创建锚点
+        const anchors = ['top', 'right', 'bottom', 'left'];
+        anchors.forEach(anchor => {
+          const anchorEl = document.createElement('div');
+          anchorEl.className = 'anchor-point';
+          anchorEl.dataset.anchor = anchor;
+          anchorEl.dataset.cardId = `card-${i}`;
+          card.appendChild(anchorEl);
         });
+        
+        const title = document.createElement('div');
+        title.className = 'card-title';
+        title.innerText = cardData.title;
+        title.style.color = textColor;
+        
+        const sub = document.createElement('div');
+        sub.className = 'card-sub';
+        sub.innerText = cardData.sub;
+        sub.style.color = textColor;
+        
+        card.appendChild(title);
+        card.appendChild(sub);
+        
+        card.style.left = `${x}px`;
+        card.style.top = `${y}px`;
+        
+        container.appendChild(card);
+        
+        state.cards.push({
+          id: `card-${i}`,
+          el: card,
+          x: x,
+          y: y,
+          color: color,
+          textColor: textColor,
+          width: cardW,
+          height: cardH
+        });
+        
+        makeDraggable(card);
+        setupAnchorPoints(card);
+      });
+    }
 
-        function initApp() {
-            // 初始化Canvas
-            canvas = document.getElementById('canvas');
-            ctx = canvas.getContext('2d');
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
-            
-            // 创建卡片
-            createCards();
-            
-            // 初始化事件监听
-            initEventListeners();
-            
-            // 绘制初始连线
-            draw();
+    function getContrastTextColor(bgColor) {
+      // 将十六进制颜色转换为 RGB
+      let r, g, b;
+      if (bgColor.startsWith('#')) {
+        const hex = bgColor.slice(1);
+        if (hex.length === 3) {
+          r = parseInt(hex[0] + hex[0], 16);
+          g = parseInt(hex[1] + hex[1], 16);
+          b = parseInt(hex[2] + hex[2], 16);
+        } else {
+          r = parseInt(hex.substring(0, 2), 16);
+          g = parseInt(hex.substring(2, 4), 16);
+          b = parseInt(hex.substring(4, 6), 16);
         }
+      } else {
+        // 简单处理，实际应用中应更完善
+        return '#ffffff';
+      }
+      
+      // 计算亮度
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      
+      // 亮度阈值，128为中间值
+      return brightness < 128 ? '#ffffff' : '#000000';
+    }
 
-        // 调整Canvas大小
-        function resizeCanvas() {
-            const container = document.querySelector('.content');
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
-            draw();
-        }
+    function createColorPicker() {
+      colorGrid.innerHTML = '';
+      
+      colors.forEach((color, index) => {
+        const item = document.createElement('div');
+        item.className = 'color-item';
+        item.style.backgroundColor = color;
+        
+        // 设置边框颜色为对比色
+        const borderColor = getContrastTextColor(color);
+        item.style.borderColor = borderColor;
+        
+        item.addEventListener('click', () => {
+          if (state.selectedCard) {
+            // 更新卡片背景色
+            state.selectedCard.el.style.backgroundColor = color;
+            state.selectedCard.color = color;
+            
+            // 更新文字颜色
+            const newTextColor = getContrastTextColor(color);
+            state.selectedCard.textColor = newTextColor;
+            
+            // 更新子元素颜色
+            const title = state.selectedCard.el.querySelector('.card-title');
+            const sub = state.selectedCard.el.querySelector('.card-sub');
+            if (title) title.style.color = newTextColor;
+            if (sub) sub.style.color = newTextColor;
+            
+            // 更新状态
+            state.lastColorSelection[state.selectedCard.id] = index;
+            
+            hideColorPicker();
+          }
+        });
+        
+        colorGrid.appendChild(item);
+      });
+    }
 
-        // 创建卡片
-        function createCards() {
-            const container = document.getElementById('cardsContainer');
-            
-            // 为iPhone 13 Mini横屏优化的初始位置
-            const positions = [
-                { left: 5, top: 10 },   // 卡片1
-                { left: 30, top: 10 },  // 卡片2
-                { left: 55, top: 10 },  // 卡片3
-                { left: 80, top: 10 },  // 卡片4
-                { left: 5, top: 35 },   // 卡片5
-                { left: 30, top: 35 },  // 卡片6
-                { left: 55, top: 35 },  // 卡片7
-                { left: 80, top: 35 },  // 卡片8
-                { left: 5, top: 60 },   // 卡片9
-                { left: 30, top: 60 }   // 卡片10
-            ];
-            
-            cardsData.forEach((cardData, index) => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.id = `card-${cardData.id}`;
-                
-                // 使用百分比定位适应不同屏幕
-                card.style.left = `${positions[index].left}%`;
-                card.style.top = `${positions[index].top}%`;
-                const backgroundColor = colorOptions[index % colorOptions.length];
-                card.style.backgroundColor = backgroundColor;
-                
-                // 计算文本颜色（与背景形成高对比度）
-                const titleColor = ColorUtils.getOptimizedTextColor(backgroundColor);
-                const subtitleColor = ColorUtils.isDarkColor(backgroundColor) ? '#CCCCCC' : '#555555';
-                
-                // 创建2行3列的颜色选择器
-                let colorPickerHTML = '<div class="color-picker">';
-                
-                // 第一行（前3个颜色）
-                colorPickerHTML += '<div class="color-row">';
-                for (let i = 0; i < 3; i++) {
-                    const color = colorOptions[i];
-                    const isSelected = (index % colorOptions.length) === i;
-                    colorPickerHTML += `
-                        <div class="color-option ${isSelected ? 'selected' : ''}" 
-                             style="background-color: ${color}" 
-                             data-color="${color}" data-index="${i}"></div>
-                    `;
-                }
-                colorPickerHTML += '</div>';
-                
-                // 第二行（后3个颜色）
-                colorPickerHTML += '<div class="color-row">';
-                for (let i = 3; i < 6; i++) {
-                    const color = colorOptions[i];
-                    const isSelected = (index % colorOptions.length) === i;
-                    colorPickerHTML += `
-                        <div class="color-option ${isSelected ? 'selected' : ''}" 
-                             style="background-color: ${color}" 
-                             data-color="${color}" data-index="${i}"></div>
-                    `;
-                }
-                colorPickerHTML += '</div>';
-                
-                colorPickerHTML += '</div>';
-                
-                card.innerHTML = `
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title" style="color: ${titleColor}">${cardData.title}</div>
-                            <div class="card-subtitle" style="color: ${subtitleColor}">${cardData.subtitle}</div>
-                        </div>
-                    </div>
-                    ${colorPickerHTML}
-                    <div class="connection-points">
-                        <div class="connection-point" data-side="top" style="top: 0; left: 50%;" title="上边中点"></div>
-                        <div class="connection-point" data-side="right" style="top: 50%; left: 100%;" title="右边中点"></div>
-                        <div class="connection-point" data-side="bottom" style="top: 100%; left: 50%;" title="下边中点"></div>
-                        <div class="connection-point" data-side="left" style="top: 50%; left: 0%;" title="左边中点"></div>
-                    </div>
-                `;
-                
-                container.appendChild(card);
-                
-                // 存储卡片数据
-                cards.push({
-                    id: cardData.id,
-                    element: card,
-                    title: cardData.title,
-                    subtitle: cardData.subtitle,
-                    x: positions[index].left,
-                    y: positions[index].top,
-                    color: backgroundColor,
-                    titleColor: titleColor,
-                    subtitleColor: subtitleColor,
-                    width: 150,
-                    height: 130
-                });
-                
-                // 添加卡片事件监听
-                addCardEventListeners(card, cardData.id);
-            });
-            
-            // 创建示例连线
-            createExampleConnections();
+    function makeDraggable(card) {
+      let isDragging = false;
+      let startX, startY, initialX, initialY;
+      
+      card.addEventListener('pointerdown', (e) => {
+        if (state.deleteMode) return;
+        e.preventDefault();
+        
+        const rect = card.getBoundingClientRect();
+        startX = e.clientX;
+        startY = e.clientY;
+        initialX = parseFloat(card.style.left);
+        initialY = parseFloat(card.style.top);
+        
+        isDragging = true;
+        state.isDragging = true;
+        
+        // 高亮选中
+        state.cards.forEach(c => c.el.classList.remove('dragging'));
+        card.classList.add('dragging');
+        state.selectedCard = state.cards.find(c => c.el === card);
+        
+        // 显示颜色选择器
+        showColorPicker(card);
+      });
+      
+      window.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        const newX = initialX + dx;
+        const newY = initialY + dy;
+        
+        const bounds = container.getBoundingClientRect();
+        const cardW = 110, cardH = 95;
+        const padding = 10;
+        
+        // 限制在容器内
+        const boundedX = Math.max(padding, Math.min(bounds.width - cardW - padding, newX));
+        const boundedY = Math.max(padding, Math.min(bounds.height - cardH - padding, newY));
+        
+        card.style.left = `${boundedX}px`;
+        card.style.top = `${boundedY}px`;
+        
+        // 更新状态
+        const cardState = state.cards.find(c => c.el === card);
+        if (cardState) {
+          cardState.x = boundedX;
+          cardState.y = boundedY;
         }
+        
+        redrawConnections();
+      });
+      
+      const stopDrag = () => {
+        if (!isDragging) return;
+        
+        isDragging = false;
+        state.isDragging = false;
+        card.classList.remove('dragging');
+        
+        // 检查是否是点击（非拖动）
+        const dx = Math.abs(parseFloat(card.style.left) - initialX);
+        const dy = Math.abs(parseFloat(card.style.top) - initialY);
+        
+        if (dx < 5 && dy < 5 && !state.connectingCard) {
+          // 点击卡片边缘，检查是否点击了锚点
+          showAnchorPoints(card);
+        }
+      };
+      
+      window.addEventListener('pointerup', stopDrag);
+      window.addEventListener('pointerleave', stopDrag);
+    }
 
-        // 更新卡片文本颜色
-        function updateCardTextColors(cardElement, backgroundColor, cardId) {
-            // 计算新的文本颜色
-            const titleColor = ColorUtils.getOptimizedTextColor(backgroundColor);
-            const subtitleColor = ColorUtils.isDarkColor(backgroundColor) ? '#CCCCCC' : '#555555';
-            
-            // 更新卡片元素样式
-            const titleElement = cardElement.querySelector('.card-title');
-            const subtitleElement = cardElement.querySelector('.card-subtitle');
-            
-            if (titleElement) {
-                titleElement.style.color = titleColor;
-            }
-            
-            if (subtitleElement) {
-                subtitleElement.style.color = subtitleColor;
-            }
-            
-            // 更新卡片数据
-            const card = cards.find(c => c.id === cardId);
-            if (card) {
-                card.titleColor = titleColor;
-                card.subtitleColor = subtitleColor;
-            }
-        }
+    function setupAnchorPoints(card) {
+      const anchorPoints = card.querySelectorAll('.anchor-point');
+      anchorPoints.forEach(anchor => {
+        anchor.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const anchorType = anchor.dataset.anchor;
+          handleAnchorClick(card, anchorType);
+        });
+      });
+    }
 
-        // 更新状态指示器
-        function updateStatusIndicator(message, icon = 'fa-mouse-pointer') {
-            const indicator = document.getElementById('statusIndicator');
-            if (indicator) {
-                indicator.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
-                
-                // 如果是删除模式，改变颜色
-                if (isDeletingLine) {
-                    indicator.style.backgroundColor = 'rgba(231, 76, 60, 0.9)';
-                    indicator.style.color = 'white';
-                } else {
-                    indicator.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-                    indicator.style.color = '#1a2980';
-                }
-            }
+    function handleAnchorClick(card, anchor) {
+      if (state.deleteMode) return;
+      
+      if (state.connectingCard) {
+        if (state.connectingCard.id !== card.id) {
+          // 完成连接，显示类型选择器
+          showTypePicker(card, anchor);
+        } else {
+          // 同一张卡片，取消
+          state.connectingCard.el.style.boxShadow = '0 3px 10px rgba(0,0,0,0.4)';
+          state.connectingCard = null;
+          state.anchorStart = null;
+          hideAnchorPoints(state.connectingCard.el);
         }
+      } else {
+        // 开始连接
+        state.connectingCard = state.cards.find(c => c.el === card);
+        state.anchorStart = anchor;
+        card.style.boxShadow = '0 0 0 3px #60a5fa, 0 0 15px rgba(96, 165, 250, 0.7)';
+        showAnchorPoints(card, true); // 高亮显示
+      }
+    }
 
-        // 添加卡片事件监听
-        function addCardEventListeners(cardElement, cardId) {
-            // 拖拽开始
-            cardElement.addEventListener('mousedown', startDrag);
-            cardElement.addEventListener('touchstart', startDragTouch, { passive: false });
-            
-            // 颜色选择
-            const colorOptions = cardElement.querySelectorAll('.color-option');
-            colorOptions.forEach(option => {
-                option.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const color = this.getAttribute('data-color');
-                    cardElement.style.backgroundColor = color;
-                    
-                    // 更新卡片文本颜色
-                    updateCardTextColors(cardElement, color, cardId);
-                    
-                    // 更新卡片数据
-                    const card = cards.find(c => c.id === cardId);
-                    if (card) {
-                        card.color = color;
-                    }
-                    
-                    // 更新选中状态
-                    colorOptions.forEach(opt => opt.classList.remove('selected'));
-                    this.classList.add('selected');
-                    
-                    draw();
-                });
-                
-                // 为触摸设备添加触摸事件
-                option.addEventListener('touchstart', function(e) {
-                    e.stopPropagation();
-                }, { passive: true });
-            });
-            
-            // 连接点点击事件
-            const connectionPoints = cardElement.querySelectorAll('.connection-point');
-            connectionPoints.forEach(point => {
-                point.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    handleConnectionPointClick(cardId, this.getAttribute('data-side'));
-                });
-                
-                // 防止拖拽时触发连接点事件
-                point.addEventListener('mousedown', function(e) {
-                    e.stopPropagation();
-                });
-                
-                point.addEventListener('touchstart', function(e) {
-                    e.stopPropagation();
-                }, { passive: true });
-            });
+    function showAnchorPoints(card, highlight = false) {
+      const anchors = card.querySelectorAll('.anchor-point');
+      anchors.forEach(anchor => {
+        anchor.style.display = 'block';
+        if (highlight) {
+          anchor.style.backgroundColor = '#fbbf24';
+          anchor.style.borderColor = 'white';
+        } else {
+          anchor.style.backgroundColor = 'rgba(96, 165, 250, 0.6)';
+          anchor.style.borderColor = 'white';
         }
+      });
+      
+      // 隐藏其他卡片的锚点
+      state.cards.forEach(c => {
+        if (c.el !== card) {
+          const otherAnchors = c.el.querySelectorAll('.anchor-point');
+          otherAnchors.forEach(a => a.style.display = 'none');
+        }
+      });
+    }
 
-        // 开始拖拽
-        function startDrag(e) {
-            if (isDrawingLine || isDeletingLine) return;
-            
-            e.preventDefault();
-            draggedCard = e.currentTarget;
-            const cardId = parseInt(draggedCard.id.split('-')[1]);
-            
-            // 计算偏移量
-            const rect = draggedCard.getBoundingClientRect();
-            dragOffsetX = e.clientX - rect.left;
-            dragOffsetY = e.clientY - rect.top;
-            
-            draggedCard.classList.add('dragging');
-            
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', stopDrag);
-            
-            updateStatusIndicator('拖动卡片移动位置', 'fa-arrows-alt');
-        }
+    function hideAnchorPoints(card) {
+      if (!card) return;
+      
+      const anchors = card.querySelectorAll('.anchor-point');
+      anchors.forEach(anchor => {
+        anchor.style.display = 'none';
+      });
+    }
 
-        // 开始拖拽（触摸）
-        function startDragTouch(e) {
-            if (isDrawingLine || isDeletingLine) return;
-            
-            // 防止双击
-            const now = Date.now();
-            if (now - lastTouchTime < 300) {
-                lastTouchTime = now;
-                return;
-            }
-            lastTouchTime = now;
-            
-            e.preventDefault();
-            draggedCard = e.currentTarget;
-            const cardId = parseInt(draggedCard.id.split('-')[1]);
-            
-            const touch = e.touches[0];
-            const rect = draggedCard.getBoundingClientRect();
-            dragOffsetX = touch.clientX - rect.left;
-            dragOffsetY = touch.clientY - rect.top;
-            
-            draggedCard.classList.add('dragging');
-            
-            document.addEventListener('touchmove', dragTouch, { passive: false });
-            document.addEventListener('touchend', stopDragTouch);
-            
-            updateStatusIndicator('拖动卡片移动位置', 'fa-arrows-alt');
-        }
+    function showColorPicker(card) {
+      if (!state.selectedCard) return;
+      
+      // 恢复上次选择的颜色
+      if (state.lastColorSelection[state.selectedCard.id] !== undefined) {
+        const items = colorGrid.querySelectorAll('.color-item');
+        items.forEach((item, index) => {
+          item.classList.toggle('selected', index === state.lastColorSelection[state.selectedCard.id]);
+        });
+      }
+      
+      const rect = card.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      
+      // 在卡片上方显示，避免被工具栏遮挡
+      let left = rect.left + rect.width / 2 - 110; // 220px/2 = 110px
+      let top = rect.top - 60; // 颜色选择器高度约50px + 10px间距
+      
+      // 检查边界
+      if (left < containerRect.left + 5) left = containerRect.left + 5;
+      if (left + 220 > containerRect.right - 5) left = containerRect.right - 225;
+      if (top < containerRect.top + 5) top = rect.bottom + 5;
+      
+      colorPicker.style.left = `${left - containerRect.left}px`;
+      colorPicker.style.top = `${top - containerRect.top}px`;
+      colorPicker.style.display = 'block';
+    }
 
-        // 拖拽
-        function drag(e) {
-            if (!draggedCard) return;
-            
-            e.preventDefault();
-            const containerRect = document.querySelector('.content').getBoundingClientRect();
-            const cardWidth = draggedCard.offsetWidth;
-            const cardHeight = draggedCard.offsetHeight;
-            
-            // 计算新位置
-            let newLeft = e.clientX - dragOffsetX - containerRect.left;
-            let newTop = e.clientY - dragOffsetY - containerRect.top;
-            
-            // 限制在容器内
-            newLeft = Math.max(0, Math.min(newLeft, containerRect.width - cardWidth));
-            newTop = Math.max(0, Math.min(newTop, containerRect.height - cardHeight));
-            
-            // 应用新位置
-            draggedCard.style.left = `${newLeft}px`;
-            draggedCard.style.top = `${newTop}px`;
-            
-            // 更新卡片数据
-            const cardId = parseInt(draggedCard.id.split('-')[1]);
-            const card = cards.find(c => c.id === cardId);
-            if (card) {
-                card.x = (newLeft / containerRect.width) * 100;
-                card.y = (newTop / containerRect.height) * 100;
-            }
-            
-            draw();
-        }
+    function hideColorPicker() {
+      colorPicker.style.display = 'none';
+    }
 
-        // 拖拽（触摸）
-        function dragTouch(e) {
-            if (!draggedCard) return;
-            
-            e.preventDefault();
-            const touch = e.touches[0];
-            const containerRect = document.querySelector('.content').getBoundingClientRect();
-            const cardWidth = draggedCard.offsetWidth;
-            const cardHeight = draggedCard.offsetHeight;
-            
-            // 计算新位置
-            let newLeft = touch.clientX - dragOffsetX - containerRect.left;
-            let newTop = touch.clientY - dragOffsetY - containerRect.top;
-            
-            // 限制在容器内
-            newLeft = Math.max(0, Math.min(newLeft, containerRect.width - cardWidth));
-            newTop = Math.max(0, Math.min(newTop, containerRect.height - cardHeight));
-            
-            // 应用新位置
-            draggedCard.style.left = `${newLeft}px`;
-            draggedCard.style.top = `${newTop}px`;
-            
-            // 更新卡片数据
-            const cardId = parseInt(draggedCard.id.split('-')[1]);
-            const card = cards.find(c => c.id === cardId);
-            if (card) {
-                card.x = (newLeft / containerRect.width) * 100;
-                card.y = (newTop / containerRect.height) * 100;
-            }
-            
-            draw();
-        }
+    function showTypePicker(card, anchorEnd) {
+      state.anchorEnd = anchorEnd;
+      const rect = card.el.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      const picker = typePicker;
+      
+      let left = rect.left + rect.width / 2 - 90; // 180px/2 = 90px
+      let top = rect.top - picker.offsetHeight - 10;
+      
+      if (top < containerRect.top + 5) top = rect.bottom + 10;
+      
+      // 边界检测
+      if (left < containerRect.left + 5) left = containerRect.left + 5;
+      if (left + 180 > containerRect.right - 5) left = containerRect.right - 185;
+      
+      picker.style.left = `${left - containerRect.left}px`;
+      picker.style.top = `${top - containerRect.top}px`;
+      picker.style.display = 'block';
+      
+      // 选择类型
+      const options = picker.querySelectorAll('.type-option');
+      options.forEach(opt => {
+        opt.onclick = () => {
+          const type = opt.dataset.type;
+          createConnection(state.connectingCard, card, state.anchorStart, anchorEnd, type);
+          picker.style.display = 'none';
+          state.connectingCard.el.style.boxShadow = '0 3px 10px rgba(0,0,0,0.4)';
+          state.connectingCard = null;
+          state.anchorStart = null;
+          state.anchorEnd = null;
+          hideAnchorPoints(state.connectingCard?.el);
+        };
+      });
+    }
 
-        // 停止拖拽
-        function stopDrag() {
-            if (draggedCard) {
-                draggedCard.classList.remove('dragging');
-                draggedCard = null;
-            }
-            
-            document.removeEventListener('mousemove', drag);
-            document.removeEventListener('mouseup', stopDrag);
-            
-            updateStatusIndicator('选择连接点创建连线', 'fa-mouse-pointer');
-        }
+    function getAnchorPoint(card, anchor) {
+      const x = card.x;
+      const y = card.y;
+      const w = card.width;
+      const h = card.height;
+      
+      switch (anchor) {
+        case 'top-left': return { x: x, y: y };
+        case 'top': return { x: x + w / 2, y: y };
+        case 'top-right': return { x: x + w, y: y };
+        case 'right': return { x: x + w, y: y + h / 2 };
+        case 'bottom-right': return { x: x + w, y: y + h };
+        case 'bottom': return { x: x + w / 2, y: y + h };
+        case 'bottom-left': return { x: x, y: y + h };
+        case 'left': return { x: x, y: y + h / 2 };
+        default: return { x: x + w / 2, y: y + h / 2 };
+      }
+    }
 
-        // 停止拖拽（触摸）
-        function stopDragTouch() {
-            if (draggedCard) {
-                draggedCard.classList.remove('dragging');
-                draggedCard = null;
-            }
-            
-            document.removeEventListener('touchmove', dragTouch);
-            document.removeEventListener('touchend', stopDragTouch);
-            
-            updateStatusIndicator('选择连接点创建连线', 'fa-mouse-pointer');
-        }
+    function createConnection(srcCard, tgtCard, srcAnchor, tgtAnchor, type) {
+      const id = `conn-${Date.now()}`;
+      
+      // 创建SVG
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('width', '100%');
+      svg.setAttribute('height', '100%');
+      svg.style.position = 'absolute';
+      svg.style.top = '0';
+      svg.style.left = '0';
+      svg.style.pointerEvents = 'none';
+      
+      // 创建箭头标记
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      
+      if (type.includes('single') || type.includes('double')) {
+        const endMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        endMarker.setAttribute('id', `arrow-end-${id}`);
+        endMarker.setAttribute('viewBox', '0 0 10 10');
+        endMarker.setAttribute('refX', '9');
+        endMarker.setAttribute('refY', '5');
+        endMarker.setAttribute('markerWidth', '6');
+        endMarker.setAttribute('markerHeight', '6');
+        endMarker.setAttribute('orient', 'auto');
+        const polyEnd = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        polyEnd.setAttribute('points', '0 0, 10 5, 0 10');
+        polyEnd.setAttribute('fill', '#60a5fa');
+        endMarker.appendChild(polyEnd);
+        defs.appendChild(endMarker);
+      }
+      
+      if (type.includes('double')) {
+        const startMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        startMarker.setAttribute('id', `arrow-start-${id}`);
+        startMarker.setAttribute('viewBox', '0 0 10 10');
+        startMarker.setAttribute('refX', '1');
+        startMarker.setAttribute('refY', '5');
+        startMarker.setAttribute('markerWidth', '6');
+        startMarker.setAttribute('markerHeight', '6');
+        startMarker.setAttribute('orient', 'auto');
+        const polyStart = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        polyStart.setAttribute('points', '10 0, 0 5, 10 10');
+        polyStart.setAttribute('fill', '#60a5fa');
+        startMarker.appendChild(polyStart);
+        defs.appendChild(startMarker);
+      }
+      
+      svg.appendChild(defs);
+      
+      // 创建路径
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('stroke', '#60a5fa');
+      path.setAttribute('stroke-width', '2.5');
+      path.setAttribute('fill', 'none');
+      path.setAttribute('class', 'connection-path');
+      path.dataset.connId = id;
+      
+      if (type.includes('single')) {
+        path.setAttribute('marker-end', `url(#arrow-end-${id})`);
+      } else if (type.includes('double')) {
+        path.setAttribute('marker-end', `url(#arrow-end-${id})`);
+        path.setAttribute('marker-start', `url(#arrow-start-${id})`);
+      }
+      
+      svg.appendChild(path);
+      connectionsContainer.appendChild(svg);
+      
+      // 创建标签
+      const label = document.createElement('div');
+      label.className = 'connection-label';
+      label.innerText = '关系';
+      label.dataset.connId = id;
+      container.appendChild(label);
+      
+      const conn = {
+        id,
+        src: srcCard.id,
+        tgt: tgtCard.id,
+        srcAnchor,
+        tgtAnchor,
+        type,
+        svg,
+        path,
+        labelEl: label,
+        label: '关系'
+      };
+      
+      state.connections.push(conn);
+      setupLabelEdit(label);
+      setupPathDelete(path);
+      updateConnection(conn);
+    }
 
-        // 处理连接点点击
-        function handleConnectionPointClick(cardId, side) {
-            if (isDeletingLine) {
-                // 删除连线模式
-                return;
-            }
-            
-            const card = cards.find(c => c.id === cardId);
-            if (!card) return;
-            
-            // 获取连接点位置
-            const pointPos = getConnectionPointPosition(card, side);
-            
-            if (!isDrawingLine) {
-                // 开始画线
-                currentLineStart = { cardId, side, x: pointPos.x, y: pointPos.y };
-                isDrawingLine = true;
-                
-                // 更新UI提示
-                document.querySelectorAll('.connection-point').forEach(p => {
-                    p.style.backgroundColor = 'rgba(26, 41, 128, 0.9)';
-                });
-                
-                updateStatusIndicator('选择另一个连接点完成连线', 'fa-project-diagram');
-            } else {
-                // 结束画线
-                if (currentLineStart.cardId === cardId) {
-                    // 不能连接同一个卡片
-                    isDrawingLine = false;
-                    currentLineStart = null;
-                    
-                    // 重置UI
-                    document.querySelectorAll('.connection-point').forEach(p => {
-                        p.style.backgroundColor = 'rgba(26, 41, 128, 0.7)';
-                    });
-                    
-                    updateStatusIndicator('不能连接同一个卡片', 'fa-exclamation-triangle');
-                    setTimeout(() => updateStatusIndicator('选择连接点创建连线', 'fa-mouse-pointer'), 2000);
-                    return;
-                }
-                
-                // 创建新连线
-                const annotation = document.getElementById('lineAnnotation').value;
-                const newConnection = {
-                    id: connections.length + 1,
-                    from: currentLineStart.cardId,
-                    fromSide: currentLineStart.side,
-                    to: cardId,
-                    toSide: side,
-                    type: selectedLineType,
-                    annotation: annotation,
-                    color: '#1a2980',
-                    timestamp: Date.now()
-                };
-                
-                connections.push(newConnection);
-                
-                // 重置状态
-                isDrawingLine = false;
-                currentLineStart = null;
-                
-                // 清空注释输入框
-                document.getElementById('lineAnnotation').value = '';
-                
-                // 重置UI
-                document.querySelectorAll('.connection-point').forEach(p => {
-                    p.style.backgroundColor = 'rgba(26, 41, 128, 0.7)';
-                });
-                
-                // 更新状态
-                updateStatusIndicator('连线创建成功', 'fa-check-circle');
-                setTimeout(() => updateStatusIndicator('选择连接点创建连线', 'fa-mouse-pointer'), 2000);
-                
-                // 重新绘制
-                draw();
-            }
+    function updateConnection(conn) {
+      const src = state.cards.find(c => c.id === conn.src);
+      const tgt = state.cards.find(c => c.id === conn.tgt);
+      if (!src || !tgt) return;
+      
+      const p1 = getAnchorPoint(src, conn.srcAnchor);
+      const p2 = getAnchorPoint(tgt, conn.tgtAnchor);
+      
+      let d;
+      if (conn.type.startsWith('straight')) {
+        // 直线
+        d = `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`;
+        
+        // 标签放在中点
+        conn.labelEl.style.left = `${(p1.x + p2.x) / 2}px`;
+        conn.labelEl.style.top = `${(p1.y + p2.y) / 2}px`;
+      } else {
+        // 折线：计算中间点
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        
+        let midX, midY;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          // 水平主导
+          midX = (p1.x + p2.x) / 2;
+          midY = p1.y + dy / 3;
+        } else {
+          // 垂直主导
+          midX = p1.x + dx / 3;
+          midY = (p1.y + p2.y) / 2;
         }
+        
+        d = `M ${p1.x} ${p1.y} L ${midX} ${midY} L ${p2.x} ${p2.y}`;
+        
+        // 标签放在弯曲点
+        conn.labelEl.style.left = `${midX}px`;
+        conn.labelEl.style.top = `${midY}px`;
+      }
+      
+      conn.path.setAttribute('d', d);
+    }
 
-        // 获取连接点位置
-        function getConnectionPointPosition(card, side) {
-            const containerRect = document.querySelector('.content').getBoundingClientRect();
-            const cardElement = document.getElementById(`card-${card.id}`);
-            const cardRect = cardElement.getBoundingClientRect();
-            
-            let x, y;
-            
-            switch(side) {
-                case 'top':
-                    x = cardRect.left + cardRect.width / 2;
-                    y = cardRect.top;
-                    break;
-                case 'right':
-                    x = cardRect.left + cardRect.width;
-                    y = cardRect.top + cardRect.height / 2;
-                    break;
-                case 'bottom':
-                    x = cardRect.left + cardRect.width / 2;
-                    y = cardRect.top + cardRect.height;
-                    break;
-                case 'left':
-                    x = cardRect.left;
-                    y = cardRect.top + cardRect.height / 2;
-                    break;
-            }
-            
-            // 转换为相对于Canvas的坐标
-            return {
-                x: x - containerRect.left,
-                y: y - containerRect.top
-            };
-        }
+    function redrawConnections() {
+      state.connections.forEach(updateConnection);
+    }
 
-        // 创建示例连线
-        function createExampleConnections() {
-            connections = [
-                {
-                    id: 1,
-                    from: 1,
-                    fromSide: 'right',
-                    to: 6,
-                    toSide: 'top',
-                    type: 'straight-arrow',
-                    annotation: '进度决定范围',
-                    color: '#1a2980'
-                },
-                {
-                    id: 2,
-                    from: 6,
-                    fromSide: 'bottom',
-                    to: 9,
-                    toSide: 'left',
-                    type: 'straight-arrow',
-                    annotation: '范围影响成本',
-                    color: '#FF6B6B'
-                },
-                {
-                    id: 3,
-                    from: 5,
-                    fromSide: 'left',
-                    to: 6,
-                    toSide: 'right',
-                    type: 'straight-double-arrow',
-                    annotation: '质量与范围相互影响',
-                    color: '#06D6A0'
-                }
-            ];
-        }
+    function setupLabelEdit(label) {
+      label.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        
+        // 删除模式下不编辑
+        if (state.deleteMode) return;
+        
+        const input = document.createElement('input');
+        input.value = label.innerText;
+        input.style.cssText = `
+          width: 80px; padding: 2px 5px; border: 1px solid #fbbf24;
+          border-radius: 10px; background: rgba(30, 41, 59, 0.95);
+          color: white; text-align: center; font-size: 0.8rem;
+          outline: none; pointer-events: auto;
+          font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        `;
+        label.innerHTML = '';
+        label.appendChild(input);
+        input.focus();
+        
+        // 选择所有文本
+        input.select();
+        
+        const save = () => {
+          const text = input.value.trim() || '关系';
+          label.innerHTML = text;
+          const conn = state.connections.find(c => c.labelEl === label);
+          if (conn) conn.label = text;
+        };
+        
+        input.addEventListener('blur', save);
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            save();
+            label.blur();
+          }
+        });
+        
+        // 防止冒泡
+        input.addEventListener('pointerdown', (e) => e.stopPropagation());
+      });
+    }
 
-        // 绘制Canvas
-        function draw() {
-            // 清除Canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 绘制所有连线
-            connections.forEach(connection => {
-                drawConnection(connection);
-            });
-            
-            // 如果正在画线，绘制预览线
-            if (isDrawingLine && currentLineStart) {
-                drawPreviewLine();
-            }
+    function setupPathDelete(path) {
+      path.addEventListener('pointerdown', (e) => {
+        if (state.deleteMode) {
+          e.stopPropagation();
+          const id = path.dataset.connId;
+          deleteConnection(id);
         }
+      });
+    }
 
-        // 绘制连线
-        function drawConnection(conn) {
-            const fromCard = cards.find(c => c.id === conn.from);
-            const toCard = cards.find(c => c.id === conn.to);
-            
-            if (!fromCard || !toCard) return;
-            
-            // 获取起点和终点坐标
-            const startPos = getConnectionPointPosition(fromCard, conn.fromSide);
-            const endPos = getConnectionPointPosition(toCard, conn.toSide);
-            
-            // 设置连线样式
-            ctx.strokeStyle = conn.color;
-            ctx.lineWidth = 2;
-            ctx.lineJoin = 'round';
-            ctx.lineCap = 'round';
-            
-            // 根据连线类型绘制
-            if (conn.type.includes('polyline')) {
-                drawPolyline(startPos, endPos, conn.fromSide, conn.toSide, conn.type.includes('arrow'));
-            } else {
-                drawStraightLine(startPos, endPos, conn.type.includes('arrow'), conn.type.includes('double'));
-            }
-            
-            // 绘制注释文字
-            if (conn.annotation) {
-                drawAnnotation(startPos, endPos, conn.annotation, conn.type.includes('polyline'));
-            }
-        }
+    function deleteConnection(id) {
+      const conn = state.connections.find(c => c.id === id);
+      if (conn) {
+        conn.svg.remove();
+        conn.labelEl.remove();
+        state.connections = state.connections.filter(c => c.id !== id);
+      }
+    }
 
-        // 绘制直线
-        function drawStraightLine(start, end, hasArrow, isDoubleArrow) {
-            ctx.beginPath();
-            ctx.moveTo(start.x, start.y);
-            ctx.lineTo(end.x, end.y);
-            ctx.stroke();
-            
-            if (hasArrow) {
-                drawArrow(end, start, isDoubleArrow);
-                if (isDoubleArrow) {
-                    drawArrow(start, end, false);
-                }
-            }
+    function setupEventListeners() {
+      document.getElementById('deleteBtn').addEventListener('click', () => {
+        state.deleteMode = !state.deleteMode;
+        const btn = document.getElementById('deleteBtn');
+        
+        if (state.deleteMode) {
+          btn.classList.add('delete-mode');
+          btn.textContent = '退出删除';
+          
+          // 高亮所有连接
+          document.querySelectorAll('.connection-path').forEach(path => {
+            path.style.stroke = '#f87171';
+            path.style.strokeWidth = '3';
+          });
+          
+          document.querySelectorAll('.connection-label').forEach(label => {
+            label.style.borderColor = '#f87171';
+            label.style.background = 'rgba(185, 28, 28, 0.8)';
+          });
+          
+          // 隐藏所有锚点
+          state.cards.forEach(card => hideAnchorPoints(card.el));
+          
+          // 隐藏颜色选择器
+          hideColorPicker();
+        } else {
+          btn.classList.remove('delete-mode');
+          btn.textContent = '删除连线';
+          
+          // 恢复连接样式
+          document.querySelectorAll('.connection-path').forEach(path => {
+            path.style.stroke = '#60a5fa';
+            path.style.strokeWidth = '2.5';
+          });
+          
+          document.querySelectorAll('.connection-label').forEach(label => {
+            label.style.borderColor = '#60a5fa';
+            label.style.background = 'rgba(15, 23, 42, 0.9)';
+          });
         }
+      });
 
-        // 绘制折线
-        function drawPolyline(start, end, startSide, endSide, hasArrow) {
-            // 计算中间点
-            const midX1 = startSide === 'left' || startSide === 'right' ? 
-                         (start.x + end.x) / 2 : start.x;
-            const midY1 = startSide === 'top' || startSide === 'bottom' ? 
-                         (start.y + end.y) / 2 : start.y;
-            
-            const midX2 = endSide === 'left' || endSide === 'right' ? 
-                         (start.x + end.x) / 2 : end.x;
-            const midY2 = endSide === 'top' || endSide === 'bottom' ? 
-                         (start.y + end.y) / 2 : end.y;
-            
-            ctx.beginPath();
-            ctx.moveTo(start.x, start.y);
-            
-            // 水平或垂直折线
-            if (startSide === 'left' || startSide === 'right') {
-                ctx.lineTo(midX1, start.y);
-                ctx.lineTo(midX1, end.y);
-                ctx.lineTo(end.x, end.y);
-            } else {
-                ctx.lineTo(start.x, midY1);
-                ctx.lineTo(end.x, midY1);
-                ctx.lineTo(end.x, end.y);
-            }
-            
-            ctx.stroke();
-            
-            if (hasArrow) {
-                drawArrow(end, {x: midX2, y: midY2}, false);
-            }
+      container.addEventListener('click', (e) => {
+        if (!state.deleteMode) return;
+        
+        // 检查是否点击了标签
+        const label = e.target.closest('.connection-label');
+        if (label) {
+          const id = label.dataset.connId;
+          deleteConnection(id);
         }
+      });
 
-        // 绘制箭头
-        function drawArrow(from, to, isDouble) {
-            const headlen = 12;
-            const dx = to.x - from.x;
-            const dy = to.y - from.y;
-            const angle = Math.atan2(dy, dx);
-            
-            ctx.beginPath();
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(
-                from.x - headlen * Math.cos(angle - Math.PI / 6),
-                from.y - headlen * Math.sin(angle - Math.PI / 6)
-            );
-            ctx.moveTo(from.x, from.y);
-            ctx.lineTo(
-                from.x - headlen * Math.cos(angle + Math.PI / 6),
-                from.y - headlen * Math.sin(angle + Math.PI / 6)
-            );
-            ctx.stroke();
+      // 关闭弹窗当点击背景
+      document.getElementById('exportModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('exportModal')) {
+          document.getElementById('exportModal').style.display = 'none';
         }
+      });
 
-        // 绘制注释
-        function drawAnnotation(start, end, text, isPolyline) {
-            if (!text) return;
-            
-            let x, y;
-            
-            if (isPolyline) {
-                x = (start.x + end.x) / 2;
-                y = (start.y + end.y) / 2 - 8;
-            } else {
-                x = (start.x + end.x) / 2;
-                y = (start.y + end.y) / 2 - 8;
-            }
-            
-            ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
-            ctx.fillStyle = '#333';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            // 绘制文字背景
-            const textWidth = ctx.measureText(text).width;
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.fillRect(x - textWidth/2 - 4, y - 8, textWidth + 8, 16);
-            
-            // 绘制文字
-            ctx.fillStyle = '#333';
-            ctx.fillText(text, x, y);
-        }
+      document.getElementById('exportBtn').addEventListener('click', () => {
+        document.getElementById('exportModal').style.display = 'flex';
+      });
 
-        // 绘制预览线
-        function drawPreviewLine() {
-            // 获取鼠标/触摸位置
-            const mouseX = canvas.width / 2;
-            const mouseY = canvas.height / 2;
-            
-            ctx.strokeStyle = 'rgba(255, 107, 107, 0.7)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([4, 4]);
-            
-            ctx.beginPath();
-            ctx.moveTo(currentLineStart.x, currentLineStart.y);
-            ctx.lineTo(mouseX, mouseY);
-            ctx.stroke();
-            
-            ctx.setLineDash([]);
-            
-            // 根据连线类型绘制预览箭头
-            if (selectedLineType.includes('arrow')) {
-                drawArrow({x: mouseX, y: mouseY}, currentLineStart, selectedLineType.includes('double'));
-                if (selectedLineType.includes('double')) {
-                    drawArrow(currentLineStart, {x: mouseX, y: mouseY}, false);
-                }
-            }
-        }
+      document.getElementById('exportJpg').addEventListener('click', exportJPG);
+      document.getElementById('exportXml').addEventListener('click', exportXML);
 
-        // 初始化事件监听
-        function initEventListeners() {
-            // 连线类型选择
-            document.querySelectorAll('.line-type-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.line-type-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    selectedLineType = this.getAttribute('data-type');
-                });
-                
-                // 触摸设备优化
-                btn.addEventListener('touchstart', function(e) {
-                    e.preventDefault();
-                    this.click();
-                }, { passive: false });
-            });
-            
-            // 帮助按钮
-            document.getElementById('helpBtn').addEventListener('click', function() {
-                document.getElementById('helpModal').style.display = 'flex';
-            });
-            
-            // 关闭帮助
-            document.getElementById('closeHelpBtn').addEventListener('click', function() {
-                document.getElementById('helpModal').style.display = 'none';
-            });
-            
-            // 删除连线按钮
-            document.getElementById('deleteLineBtn').addEventListener('click', function() {
-                isDeletingLine = !isDeletingLine;
-                isDrawingLine = false;
-                currentLineStart = null;
-                
-                if (isDeletingLine) {
-                    this.style.backgroundColor = '#2ecc71';
-                    this.innerHTML = '<i class="fas fa-check-circle"></i> 选择要删除的连线';
-                    
-                    updateStatusIndicator('点击要删除的连线', 'fa-trash-alt');
-                    
-                    // 添加点击连线删除功能
-                    canvas.addEventListener('click', handleLineClickForDeletion);
-                    canvas.addEventListener('touchstart', handleLineClickForDeletion, { passive: false });
-                } else {
-                    this.style.backgroundColor = '#e74c3c';
-                    this.innerHTML = '<i class="fas fa-trash-alt"></i> 删除连线';
-                    
-                    updateStatusIndicator('选择连接点创建连线', 'fa-mouse-pointer');
-                    
-                    // 移除点击连线删除功能
-                    canvas.removeEventListener('click', handleLineClickForDeletion);
-                    canvas.removeEventListener('touchstart', handleLineClickForDeletion);
-                }
-            });
-            
-            // 导出按钮
-            document.getElementById('exportBtn').addEventListener('click', function() {
-                document.getElementById('exportModal').style.display = 'flex';
-            });
-            
-            // 关闭导出模态框
-            document.getElementById('closeExportBtn').addEventListener('click', function() {
-                document.getElementById('exportModal').style.display = 'none';
-            });
-            
-            // 导出为JPG
-            document.getElementById('exportJPG').addEventListener('click', exportAsJPG);
-            
-            // 导出为XML
-            document.getElementById('exportXML').addEventListener('click', exportAsXML);
-            
-            // 点击模态框外部关闭
-            window.addEventListener('click', function(e) {
-                if (e.target.classList.contains('modal')) {
-                    e.target.style.display = 'none';
-                }
-            });
-            
-            // 触摸设备优化：触摸外部关闭模态框
-            window.addEventListener('touchstart', function(e) {
-                if (e.target.classList.contains('modal')) {
-                    e.target.style.display = 'none';
-                }
-            });
-            
-            // 防止页面滚动
-            document.addEventListener('touchmove', function(e) {
-                if (e.target.classList.contains('modal-content') || e.target.closest('.modal-content')) {
-                    return;
-                }
-                e.preventDefault();
-            }, { passive: false });
-            
-            // 处理键盘弹出
-            window.addEventListener('resize', function() {
-                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
-                    setTimeout(() => {
-                        document.activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 300);
-                }
-            });
-            
-            // 阻止默认拖拽行为
-            document.addEventListener('dragover', function(e) {
-                e.preventDefault();
-            });
-            
-            document.addEventListener('drop', function(e) {
-                e.preventDefault();
-            });
+      window.addEventListener('resize', checkOrientation);
+      
+      // 点击空白处隐藏UI
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.card') && 
+            !e.target.closest('.color-picker') && 
+            !e.target.closest('.connection-label') &&
+            !e.target.closest('.connection-type-picker') &&
+            !e.target.closest('.toolbar')) {
+          hideColorPicker();
+          if (state.connectingCard) {
+            state.connectingCard.el.style.boxShadow = '0 3px 10px rgba(0,0,0,0.4)';
+            state.connectingCard = null;
+            state.anchorStart = null;
+          }
+          state.cards.forEach(card => hideAnchorPoints(card.el));
         }
+      });
+    }
 
-        // 处理连线点击以删除
-        function handleLineClickForDeletion(e) {
-            if (connections.length > 0) {
-                connections.pop();
-                draw();
-                updateStatusIndicator('连线已删除', 'fa-trash-alt');
-                setTimeout(() => updateStatusIndicator('点击要删除的连线', 'fa-trash-alt'), 1000);
-            }
-            
-            if (isTouchDevice) {
-                e.preventDefault();
-            }
-        }
+    function initWatermark() {
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      document.querySelector('.watermark').textContent = `生成于 ${dateStr} • 项目管理之舟`;
+    }
 
-        // 导出为JPG
-        function exportAsJPG() {
-            // 在实际部署中，可以使用html2canvas库
-            // 这里简化处理，提供使用说明
-            alert('在真实部署中，这里会使用html2canvas库将整个游戏区域转换为JPG图片并下载。\n\n当前为演示版本，请使用以下方法保存图片：\n1. 在iPhone上：同时按下侧边按钮和调高音量按钮截图\n2. 然后点击左下角的缩略图，选择"存储到文件"或"保存到照片"\n3. 或者使用浏览器的"分享"功能保存截图');
-            document.getElementById('exportModal').style.display = 'none';
-        }
+    function checkOrientation() {
+      const alert = document.querySelector('.orientation-alert');
+      const container = document.getElementById('container');
+      
+      if (window.innerHeight > window.innerWidth) {
+        alert.style.display = 'flex';
+        container.style.display = 'none';
+      } else {
+        alert.style.display = 'none';
+        container.style.display = 'block';
+        
+        // 适配横屏尺寸
+        updateCardPositions();
+      }
+    }
 
-        // 导出为XML
-        function exportAsXML() {
-            // 创建XML结构
-            let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-            xml += '<project-management-ship created="' + new Date().toISOString() + '">\n';
-            
-            // 添加元数据
-            xml += '  <metadata>\n';
-            xml += '    <title>项目管理之舟图表</title>\n';
-            xml += '    <created>' + new Date().toLocaleString() + '</created>\n';
-            xml += '    <cardsCount>' + cards.length + '</cardsCount>\n';
-            xml += '    <connectionsCount>' + connections.length + '</connectionsCount>\n';
-            xml += '  </metadata>\n';
-            
-            // 添加卡片数据
-            xml += '  <cards>\n';
-            cards.forEach(card => {
-                xml += `    <card id="${card.id}">\n`;
-                xml += `      <title><![CDATA[${card.title}]]></title>\n`;
-                xml += `      <subtitle><![CDATA[${card.subtitle}]]></subtitle>\n`;
-                xml += `      <position x="${card.x.toFixed(2)}" y="${card.y.toFixed(2)}" />\n`;
-                xml += `      <color>${card.color}</color>\n`;
-                xml += `      <titleColor>${card.titleColor}</titleColor>\n`;
-                xml += `      <subtitleColor>${card.subtitleColor}</subtitleColor>\n`;
-                xml += `    </card>\n`;
-            });
-            xml += '  </cards>\n';
-            
-            // 添加连线数据
-            xml += '  <connections>\n';
-            connections.forEach(conn => {
-                xml += `    <connection id="${conn.id}">\n`;
-                xml += `      <from card="${conn.from}" side="${conn.fromSide}" />\n`;
-                xml += `      <to card="${conn.to}" side="${conn.toSide}" />\n`;
-                xml += `      <type>${conn.type}</type>\n`;
-                xml += `      <annotation><![CDATA[${conn.annotation}]]></annotation>\n`;
-                xml += `      <color>${conn.color}</color>\n`;
-                xml += `    </connection>\n`;
-            });
-            xml += '  </connections>\n';
-            
-            xml += '</project-management-ship>';
-            
-            // 创建下载链接
-            const blob = new Blob([xml], { type: 'application/xml;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = '项目管理之舟-' + new Date().toISOString().slice(0, 10) + '.xml';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            document.getElementById('exportModal').style.display = 'none';
+    function updateCardPositions() {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      
+      // 为10个卡片规划最佳位置
+      const positions = getOptimalPositions(w, h);
+      
+      state.cards.forEach((card, i) => {
+        if (i < positions.length) {
+          card.x = positions[i].x;
+          card.y = positions[i].y;
+          card.el.style.left = `${card.x}px`;
+          card.el.style.top = `${card.y}px`;
         }
-    </script>
+      });
+      
+      redrawConnections();
+    }
+
+    function getOptimalPositions(width, height) {
+      // 为iPhone 13 mini优化的位置
+      const cardW = 110, cardH = 95;
+      const padding = 15;
+      
+      // 计算每行可放置的卡片数量
+      const cardsPerRow = Math.floor((width - 2 * padding) / (cardW + padding));
+      const rows = Math.ceil(10 / cardsPerRow);
+      
+      // 计算起始位置使卡片居中
+      const totalWidth = cardsPerRow * cardW + (cardsPerRow - 1) * padding;
+      const startX = (width - totalWidth) / 2;
+      const totalHeight = rows * cardH + (rows - 1) * padding;
+      const startY = (height - totalHeight) / 2;
+      
+      const positions = [];
+      for (let i = 0; i < 10; i++) {
+        const row = Math.floor(i / cardsPerRow);
+        const col = i % cardsPerRow;
+        const x = startX + col * (cardW + padding);
+        const y = startY + row * (cardH + padding);
+        
+        // 确保在边界内
+        positions.push({
+          x: Math.max(padding, Math.min(width - cardW - padding, x)),
+          y: Math.max(padding, Math.min(height - cardH - padding, y))
+        });
+      }
+      
+      return positions;
+    }
+
+    // Export functions
+    async function exportJPG() {
+      document.getElementById('exportModal').style.display = 'none';
+      const loading = document.getElementById('loading');
+      loading.style.display = 'flex';
+
+      try {
+        // 临时隐藏UI元素
+        const toolbar = document.querySelector('.toolbar');
+        const cp = document.getElementById('colorPicker');
+        const tp = document.getElementById('typePicker');
+        const watermark = document.querySelector('.watermark');
+        
+        const origTb = toolbar.style.display;
+        const origCp = cp.style.display;
+        const origTp = tp.style.display;
+        const origWm = watermark.style.display;
+        
+        toolbar.style.display = 'none';
+        cp.style.display = 'none';
+        tp.style.display = 'none';
+        
+        // 添加导出水印
+        const exportWatermark = document.createElement('div');
+        exportWatermark.className = 'watermark';
+        exportWatermark.style.bottom = '5px';
+        exportWatermark.style.right = '10px';
+        exportWatermark.style.fontSize = '0.7rem';
+        exportWatermark.textContent = `项目管理之舟 • ${new Date().toLocaleDateString('zh-CN')}`;
+        container.appendChild(exportWatermark);
+        
+        const canvas = await html2canvas(container, {
+          backgroundColor: null,
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false
+        });
+        
+        // 恢复原始状态
+        toolbar.style.display = origTb;
+        cp.style.display = origCp;
+        tp.style.display = origTp;
+        watermark.style.display = origWm;
+        container.removeChild(exportWatermark);
+        
+        // 创建下载链接
+        const link = document.createElement('a');
+        link.download = `项目管理之舟_${new Date().toISOString().slice(0, 10)}.jpg`;
+        link.href = canvas.toDataURL('image/jpeg', 0.92);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+      } catch (e) {
+        alert('导出图片失败，请重试');
+        console.error(e);
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+
+    function exportXML() {
+      document.getElementById('exportModal').style.display = 'none';
+
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<projectManagementBoat version="1.2">\n`;
+      
+      // 元数据
+      xml += `  <metadata>\n`;
+      xml += `    <created>${new Date().toISOString()}</created>\n`;
+      xml += `    <device>${navigator.userAgent}</device>\n`;
+      xml += `  </metadata>\n`;
+
+      // Cards
+      xml += `  <cards>\n`;
+      state.cards.forEach(card => {
+        const idx = parseInt(card.id.split('-')[1]);
+        xml += `    <card id="${card.id}" x="${Math.round(card.x)}" y="${Math.round(card.y)}" color="${card.color}" textColor="${card.textColor}">\n`;
+        xml += `      <title><![CDATA[${cards[idx].title}]]></title>\n`;
+        xml += `      <subtitle><![CDATA[${cards[idx].sub}]]></subtitle>\n`;
+        xml += `    </card>\n`;
+      });
+      xml += `  </cards>\n`;
+
+      // Connections
+      xml += `  <connections>\n`;
+      state.connections.forEach(conn => {
+        xml += `    <connection id="${conn.id}" source="${conn.src}" target="${conn.tgt}" `;
+        xml += `srcAnchor="${conn.srcAnchor}" tgtAnchor="${conn.tgtAnchor}" type="${conn.type}" `;
+        xml += `label="${escapeXml(conn.label)}"/>\n`;
+      });
+      xml += `  </connections>\n`;
+
+      xml += `</projectManagementBoat>`;
+
+      const blob = new Blob([xml], { type: 'application/xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `项目管理之舟_${new Date().toISOString().slice(0, 10)}.xml`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+    }
+
+    function escapeXml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>"']/g, (c) => {
+        switch (c) {
+          case '&': return '&amp;';
+          case '<': return '&lt;';
+          case '>': return '&gt;';
+          case '"': return '&quot;';
+          case "'": return '&apos;';
+          default: return c;
+        }
+      });
+    }
+
+    // Start
+    document.addEventListener('DOMContentLoaded', () => {
+      // 确保容器隐藏直到检查方向
+      document.getElementById('container').style.display = 'none';
+      init();
+    });
+  </script>
 </body>
 </html>
