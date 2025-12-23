@@ -107,17 +107,29 @@
       line-height: 1.3;
     }
 
-    .anchor-point {
+    .card-edge {
       position: absolute;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: rgba(96, 165, 250, 0.6);
-      border: 2px solid white;
-      z-index: 15;
+      background: rgba(255, 255, 255, 0.2);
+      z-index: 12;
       pointer-events: auto;
-      cursor: pointer;
-      display: none;
+      transition: background 0.2s;
+    }
+    
+    .card-top { top: 0; left: 0; width: 100%; height: 15px; border-top-left-radius: 10px; border-top-right-radius: 10px; }
+    .card-right { top: 0; right: 0; width: 15px; height: 100%; border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+    .card-bottom { bottom: 0; left: 0; width: 100%; height: 15px; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
+    .card-left { top: 0; left: 0; width: 15px; height: 100%; border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+
+    .card-edge:hover {
+      background: rgba(96, 165, 250, 0.4);
+    }
+
+    .card.highlight {
+      box-shadow: 0 0 0 3px #fbbf24, 0 0 15px rgba(251, 191, 36, 0.6);
+    }
+
+    .card.source-card {
+      box-shadow: 0 0 0 3px #10b981, 0 0 15px rgba(16, 185, 129, 0.7);
     }
 
     .toolbar {
@@ -159,6 +171,11 @@
     .btn.delete-mode {
       background: rgba(185, 28, 28, 0.95);
       border-color: #f87171;
+    }
+
+    .btn.connect-mode {
+      background: rgba(16, 185, 129, 0.95);
+      border-color: #10b981;
     }
 
     .color-picker {
@@ -203,6 +220,16 @@
       z-index: 5;
     }
 
+    .temp-connection {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 7;
+    }
+
     .connection-path {
       pointer-events: auto !important;
       cursor: pointer;
@@ -225,32 +252,111 @@
       touch-action: manipulation;
     }
 
-    .connection-type-picker {
+    .connection-type-bar {
       position: absolute;
       background: rgba(15, 23, 42, 0.95);
       border: 2px solid #60a5fa;
-      border-radius: 12px;
-      padding: 10px;
+      border-radius: 30px;
+      padding: 8px;
       display: none;
       z-index: 50;
       box-shadow: 0 5px 18px rgba(0, 0, 0, 0.5);
-      min-width: 180px;
-      max-height: 300px;
-      overflow-y: auto;
+      min-width: 240px;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
     }
 
-    .type-option {
-      padding: 8px 10px;
-      color: white;
+    .type-selector {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .line-type {
+      width: 30px;
+      height: 2px;
+      background: #60a5fa;
+      position: relative;
       cursor: pointer;
-      border-radius: 8px;
-      margin: 4px 0;
-      font-size: 0.9rem;
-      touch-action: manipulation;
+      margin: 0 5px;
     }
 
-    .type-option:hover, .type-option.selected {
-      background: rgba(59, 130, 246, 0.6);
+    .line-type:hover {
+      background: #fbbf24;
+    }
+
+    .line-type.straight { width: 30px; }
+    .line-type.polyline { width: 30px; height: 3px; background: none; }
+    .line-type.polyline:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 15px;
+      height: 2px;
+      background: #60a5fa;
+    }
+    .line-type.polyline:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 15px;
+      width: 15px;
+      height: 2px;
+      background: #60a5fa;
+      transform: translateY(8px);
+    }
+
+    .arrow-type {
+      position: relative;
+      width: 12px;
+      height: 12px;
+      margin: 0 4px;
+      cursor: pointer;
+    }
+
+    .arrow-type.none:before { content: ''; }
+    .arrow-type.single:after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      border-left: 6px solid #60a5fa;
+    }
+    .arrow-type.double:before,
+    .arrow-type.double:after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      width: 0;
+      height: 0;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+    }
+    .arrow-type.double:before {
+      right: 0;
+      border-left: 6px solid #60a5fa;
+    }
+    .arrow-type.double:after {
+      left: 0;
+      border-right: 6px solid #60a5fa;
+    }
+
+    .arrow-type:hover .arrow-type:after,
+    .arrow-type:hover .arrow-type:before {
+      border-left-color: #fbbf24;
+      border-right-color: #fbbf24;
+    }
+
+    .type-label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 4px;
     }
 
     .export-modal {
@@ -351,6 +457,24 @@
       z-index: 1;
     }
 
+    .instructions {
+      position: absolute;
+      top: 12px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.95rem;
+      color: #94a3b8;
+      z-index: 100;
+      padding: 0 20px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .highlight-instruction {
+      color: #fbbf24;
+      font-weight: bold;
+    }
+
     @media (max-aspect-ratio: 13/9) {
       .orientation-alert {
         display: flex;
@@ -369,6 +493,10 @@
       .toolbar {
         bottom: calc(15px + env(safe-area-inset-bottom));
       }
+      
+      .connection-type-bar {
+        bottom: calc(70px + env(safe-area-inset-bottom));
+      }
     }
   </style>
 </head>
@@ -381,8 +509,11 @@
   <div class="container" id="container">
     <div class="connections-container" id="connectionsContainer"></div>
     <!-- Cards will be inserted by JS -->
+    
+    <div class="temp-connection" id="tempConnection"></div>
 
     <div class="toolbar">
+      <button class="btn" id="connectBtn">创建连线</button>
       <button class="btn" id="deleteBtn">删除连线</button>
       <button class="btn" id="exportBtn">导出结果</button>
     </div>
@@ -391,16 +522,29 @@
       <div class="color-grid" id="colorGrid"></div>
     </div>
 
-    <div class="connection-type-picker" id="typePicker">
-      <div class="type-option" data-type="straight-none">→ 直线（无箭头）</div>
-      <div class="type-option" data-type="straight-single">→ 直线（单向）</div>
-      <div class="type-option" data-type="straight-double">↔ 直线（双向）</div>
-      <div class="type-option" data-type="polyline-none">→ 折线（无箭头）</div>
-      <div class="type-option" data-type="polyline-single">→ 折线（单向）</div>
-      <div class="type-option" data-type="polyline-double">↔ 折线（双向）</div>
+    <div class="connection-type-bar" id="typeBar">
+      <div class="type-selector">
+        <div class="line-type straight" data-type="straight" title="直线连接"></div>
+        <div class="line-type polyline" data-type="polyline" title="折线连接"></div>
+        <div style="flex:1"></div>
+        <div class="arrow-type none" data-type="none" title="无箭头"></div>
+        <div class="arrow-type single" data-type="single" title="单向箭头"></div>
+        <div class="arrow-type double" data-type="double" title="双向箭头"></div>
+        <div style="flex:1"></div>
+        <div style="text-align: center; margin-left: 10px;">
+          <div style="font-weight: bold; color: #fbbf24;">确认</div>
+          <div class="type-label">点击卡片完成</div>
+        </div>
+      </div>
     </div>
 
-    <div class="watermark">项目管理之舟 v1.2</div>
+    <div class="instructions" id="instructions">
+      <span class="highlight-instruction">拖拽</span>卡片调整位置 • 
+      <span class="highlight-instruction">点击</span>卡片修改颜色 • 
+      <span class="highlight-instruction">点击底部按钮</span>创建/删除连线
+    </div>
+
+    <div class="watermark">项目管理之舟 v1.3</div>
   </div>
 
   <div class="export-modal" id="exportModal">
@@ -467,6 +611,9 @@
       selectedCard: null,
       connectingCard: null,
       deleteMode: false,
+      connectMode: false,
+      lineType: 'straight', // 'straight' or 'polyline'
+      arrowType: 'single',  // 'none', 'single', 'double'
       isDragging: false,
       dragOffset: { x: 0, y: 0 },
       tempConnection: null,
@@ -477,14 +624,17 @@
 
     const container = document.getElementById('container');
     const connectionsContainer = document.getElementById('connectionsContainer');
+    const tempConnectionContainer = document.getElementById('tempConnection');
     const colorPicker = document.getElementById('colorPicker');
     const colorGrid = document.getElementById('colorGrid');
-    const typePicker = document.getElementById('typePicker');
+    const typeBar = document.getElementById('typeBar');
+    const instructions = document.getElementById('instructions');
 
     // Init
     function init() {
       createCards();
       createColorPicker();
+      setupTypeBar();
       setupEventListeners();
       checkOrientation();
       initWatermark();
@@ -512,20 +662,6 @@
         card.className = 'card';
         card.dataset.id = `card-${i}`;
         
-        // 为前6张卡片分配预设位置，其余随机
-        let x, y;
-        if (i < positions.length) {
-          x = positions[i].x;
-          y = positions[i].y;
-          
-          // 确保卡片完全在屏幕内
-          x = Math.max(padding, Math.min(w - cardW - padding, x));
-          y = Math.max(padding, Math.min(h - cardH - padding, y));
-        } else {
-          x = padding + Math.random() * (w - 2 * padding - cardW);
-          y = padding + Math.random() * (h - 2 * padding - cardH);
-        }
-        
         // 为每张卡片分配初始颜色（循环使用6种颜色）
         const color = colors[i % colors.length];
         card.style.backgroundColor = color;
@@ -534,14 +670,12 @@
         const textColor = getContrastTextColor(color);
         card.style.color = textColor;
         
-        // 创建锚点
-        const anchors = ['top', 'right', 'bottom', 'left'];
-        anchors.forEach(anchor => {
-          const anchorEl = document.createElement('div');
-          anchorEl.className = 'anchor-point';
-          anchorEl.dataset.anchor = anchor;
-          anchorEl.dataset.cardId = `card-${i}`;
-          card.appendChild(anchorEl);
+        // 创建边缘可点击区域
+        ['top', 'right', 'bottom', 'left'].forEach(side => {
+          const edge = document.createElement('div');
+          edge.className = `card-edge card-${side}`;
+          edge.dataset.side = side;
+          card.appendChild(edge);
         });
         
         const title = document.createElement('div');
@@ -556,6 +690,20 @@
         
         card.appendChild(title);
         card.appendChild(sub);
+        
+        // 为前6张卡片分配预设位置，其余随机
+        let x, y;
+        if (i < positions.length) {
+          x = positions[i].x;
+          y = positions[i].y;
+          
+          // 确保卡片完全在屏幕内
+          x = Math.max(padding, Math.min(w - cardW - padding, x));
+          y = Math.max(padding, Math.min(h - cardH - padding, y));
+        } else {
+          x = padding + Math.random() * (w - 2 * padding - cardW);
+          y = padding + Math.random() * (h - 2 * padding - cardH);
+        }
         
         card.style.left = `${x}px`;
         card.style.top = `${y}px`;
@@ -574,7 +722,7 @@
         });
         
         makeDraggable(card);
-        setupAnchorPoints(card);
+        setupCardEdges(card);
       });
     }
 
@@ -601,7 +749,7 @@
       const brightness = (r * 299 + g * 587 + b * 114) / 1000;
       
       // 亮度阈值，128为中间值
-      return brightness < 128 ? '#ffffff' : '#000000';
+      return brightness < 160 ? '#ffffff' : '#000000';
     }
 
     function createColorPicker() {
@@ -643,12 +791,61 @@
       });
     }
 
+    function setupTypeBar() {
+      // 设置线条类型
+      const lineTypes = typeBar.querySelectorAll('.line-type');
+      lineTypes.forEach(el => {
+        el.addEventListener('click', () => {
+          state.lineType = el.dataset.type;
+          
+          // 更新高亮
+          lineTypes.forEach(l => l.style.background = l.dataset.type === state.lineType ? '#fbbf24' : '#60a5fa');
+          
+          updateTempConnection();
+        });
+      });
+      
+      // 设置箭头类型
+      const arrowTypes = typeBar.querySelectorAll('.arrow-type');
+      arrowTypes.forEach(el => {
+        el.addEventListener('click', () => {
+          state.arrowType = el.dataset.type;
+          
+          // 更新高亮
+          arrowTypes.forEach(a => {
+            if (a.dataset.type === state.arrowType) {
+              a.style.borderColor = '#fbbf24';
+              if (a.classList.contains('single')) a.style.borderLeftColor = '#fbbf24';
+              if (a.classList.contains('double')) {
+                a.style.borderLeftColor = '#fbbf24';
+                a.style.borderRightColor = '#fbbf24';
+              }
+            } else {
+              a.style.borderColor = '#60a5fa';
+              if (a.classList.contains('single')) a.style.borderLeftColor = '#60a5fa';
+              if (a.classList.contains('double')) {
+                a.style.borderLeftColor = '#60a5fa';
+                a.style.borderRightColor = '#60a5fa';
+              }
+            }
+          });
+          
+          updateTempConnection();
+        });
+      });
+      
+      // 初始化选中状态
+      document.querySelector('.line-type.straight').style.background = '#fbbf24';
+      document.querySelector('.arrow-type.single').style.borderLeftColor = '#fbbf24';
+      document.querySelector('.arrow-type.single').style.borderColor = '#fbbf24';
+    }
+
     function makeDraggable(card) {
       let isDragging = false;
       let startX, startY, initialX, initialY;
       
       card.addEventListener('pointerdown', (e) => {
-        if (state.deleteMode) return;
+        if (state.deleteMode || state.connectMode) return;
         e.preventDefault();
         
         const rect = card.getBoundingClientRect();
@@ -698,6 +895,11 @@
         }
         
         redrawConnections();
+        
+        // 更新临时连线
+        if (state.connectingCard) {
+          updateTempConnection();
+        }
       });
       
       const stopDrag = () => {
@@ -706,173 +908,208 @@
         isDragging = false;
         state.isDragging = false;
         card.classList.remove('dragging');
-        
-        // 检查是否是点击（非拖动）
-        const dx = Math.abs(parseFloat(card.style.left) - initialX);
-        const dy = Math.abs(parseFloat(card.style.top) - initialY);
-        
-        if (dx < 5 && dy < 5 && !state.connectingCard) {
-          // 点击卡片边缘，检查是否点击了锚点
-          showAnchorPoints(card);
-        }
       };
       
       window.addEventListener('pointerup', stopDrag);
       window.addEventListener('pointerleave', stopDrag);
     }
 
-    function setupAnchorPoints(card) {
-      const anchorPoints = card.querySelectorAll('.anchor-point');
-      anchorPoints.forEach(anchor => {
-        anchor.addEventListener('click', (e) => {
+    function setupCardEdges(card) {
+      const edges = card.querySelectorAll('.card-edge');
+      edges.forEach(edge => {
+        edge.addEventListener('pointerdown', (e) => {
           e.stopPropagation();
-          const anchorType = anchor.dataset.anchor;
-          handleAnchorClick(card, anchorType);
+          
+          if (state.deleteMode) return;
+          
+          const side = edge.dataset.side;
+          
+          if (state.connectMode) {
+            if (!state.connectingCard) {
+              // 第一个卡片被选中
+              state.connectingCard = state.cards.find(c => c.el === card);
+              state.anchorStart = side;
+              
+              card.classList.add('source-card');
+              
+              // 显示类型选择栏
+              typeBar.style.display = 'block';
+              
+              // 更新提示
+              instructions.innerHTML = `
+                <span class="highlight-instruction">选择连接类型</span>，然后
+                <span class="highlight-instruction">点击目标卡片边缘</span>完成连线
+              `;
+              
+              updateTempConnection(true);
+            } else {
+              // 第二个卡片被选中，完成连线
+              const targetCard = state.cards.find(c => c.el === card);
+              
+              if (state.connectingCard.id !== targetCard.id) {
+                // 创建连接
+                createConnection(
+                  state.connectingCard, 
+                  targetCard, 
+                  state.anchorStart, 
+                  side, 
+                  state.lineType, 
+                  state.arrowType
+                );
+              }
+              
+              // 重置状态
+              state.connectingCard.el.classList.remove('source-card');
+              state.connectingCard = null;
+              state.anchorStart = null;
+              state.connectMode = false;
+              
+              // 隐藏UI
+              typeBar.style.display = 'none';
+              tempConnectionContainer.innerHTML = '';
+              
+              // 更新按钮状态
+              document.getElementById('connectBtn').classList.remove('connect-mode');
+              document.getElementById('connectBtn').textContent = '创建连线';
+              
+              // 恢复提示
+              instructions.innerHTML = `
+                <span class="highlight-instruction">拖拽</span>卡片调整位置 • 
+                <span class="highlight-instruction">点击</span>卡片修改颜色 • 
+                <span class="highlight-instruction">点击底部按钮</span>创建/删除连线
+              `;
+            }
+          }
         });
       });
     }
 
-    function handleAnchorClick(card, anchor) {
-      if (state.deleteMode) return;
+    function startConnectMode() {
+      state.connectMode = true;
+      document.getElementById('connectBtn').classList.add('connect-mode');
+      document.getElementById('connectBtn').textContent = '选择源卡片边缘';
       
-      if (state.connectingCard) {
-        if (state.connectingCard.id !== card.id) {
-          // 完成连接，显示类型选择器
-          showTypePicker(card, anchor);
-        } else {
-          // 同一张卡片，取消
-          state.connectingCard.el.style.boxShadow = '0 3px 10px rgba(0,0,0,0.4)';
-          state.connectingCard = null;
-          state.anchorStart = null;
-          hideAnchorPoints(state.connectingCard.el);
-        }
-      } else {
-        // 开始连接
-        state.connectingCard = state.cards.find(c => c.el === card);
-        state.anchorStart = anchor;
-        card.style.boxShadow = '0 0 0 3px #60a5fa, 0 0 15px rgba(96, 165, 250, 0.7)';
-        showAnchorPoints(card, true); // 高亮显示
-      }
-    }
-
-    function showAnchorPoints(card, highlight = false) {
-      const anchors = card.querySelectorAll('.anchor-point');
-      anchors.forEach(anchor => {
-        anchor.style.display = 'block';
-        if (highlight) {
-          anchor.style.backgroundColor = '#fbbf24';
-          anchor.style.borderColor = 'white';
-        } else {
-          anchor.style.backgroundColor = 'rgba(96, 165, 250, 0.6)';
-          anchor.style.borderColor = 'white';
-        }
-      });
-      
-      // 隐藏其他卡片的锚点
-      state.cards.forEach(c => {
-        if (c.el !== card) {
-          const otherAnchors = c.el.querySelectorAll('.anchor-point');
-          otherAnchors.forEach(a => a.style.display = 'none');
-        }
-      });
-    }
-
-    function hideAnchorPoints(card) {
-      if (!card) return;
-      
-      const anchors = card.querySelectorAll('.anchor-point');
-      anchors.forEach(anchor => {
-        anchor.style.display = 'none';
-      });
-    }
-
-    function showColorPicker(card) {
-      if (!state.selectedCard) return;
-      
-      // 恢复上次选择的颜色
-      if (state.lastColorSelection[state.selectedCard.id] !== undefined) {
-        const items = colorGrid.querySelectorAll('.color-item');
-        items.forEach((item, index) => {
-          item.classList.toggle('selected', index === state.lastColorSelection[state.selectedCard.id]);
+      // 高亮所有卡片边缘
+      state.cards.forEach(card => {
+        const edges = card.el.querySelectorAll('.card-edge');
+        edges.forEach(edge => {
+          edge.style.background = 'rgba(16, 185, 129, 0.3)';
+          edge.style.border = '1px solid #10b981';
         });
-      }
-      
-      const rect = card.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-      
-      // 在卡片上方显示，避免被工具栏遮挡
-      let left = rect.left + rect.width / 2 - 110; // 220px/2 = 110px
-      let top = rect.top - 60; // 颜色选择器高度约50px + 10px间距
-      
-      // 检查边界
-      if (left < containerRect.left + 5) left = containerRect.left + 5;
-      if (left + 220 > containerRect.right - 5) left = containerRect.right - 225;
-      if (top < containerRect.top + 5) top = rect.bottom + 5;
-      
-      colorPicker.style.left = `${left - containerRect.left}px`;
-      colorPicker.style.top = `${top - containerRect.top}px`;
-      colorPicker.style.display = 'block';
-    }
-
-    function hideColorPicker() {
-      colorPicker.style.display = 'none';
-    }
-
-    function showTypePicker(card, anchorEnd) {
-      state.anchorEnd = anchorEnd;
-      const rect = card.el.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-      const picker = typePicker;
-      
-      let left = rect.left + rect.width / 2 - 90; // 180px/2 = 90px
-      let top = rect.top - picker.offsetHeight - 10;
-      
-      if (top < containerRect.top + 5) top = rect.bottom + 10;
-      
-      // 边界检测
-      if (left < containerRect.left + 5) left = containerRect.left + 5;
-      if (left + 180 > containerRect.right - 5) left = containerRect.right - 185;
-      
-      picker.style.left = `${left - containerRect.left}px`;
-      picker.style.top = `${top - containerRect.top}px`;
-      picker.style.display = 'block';
-      
-      // 选择类型
-      const options = picker.querySelectorAll('.type-option');
-      options.forEach(opt => {
-        opt.onclick = () => {
-          const type = opt.dataset.type;
-          createConnection(state.connectingCard, card, state.anchorStart, anchorEnd, type);
-          picker.style.display = 'none';
-          state.connectingCard.el.style.boxShadow = '0 3px 10px rgba(0,0,0,0.4)';
-          state.connectingCard = null;
-          state.anchorStart = null;
-          state.anchorEnd = null;
-          hideAnchorPoints(state.connectingCard?.el);
-        };
       });
+      
+      instructions.innerHTML = `
+        <span class="highlight-instruction">点击源卡片边缘</span>开始创建连线
+      `;
     }
 
-    function getAnchorPoint(card, anchor) {
-      const x = card.x;
-      const y = card.y;
-      const w = card.width;
-      const h = card.height;
+    function cancelConnectMode() {
+      state.connectMode = false;
+      state.connectingCard = null;
+      state.anchorStart = null;
       
-      switch (anchor) {
-        case 'top-left': return { x: x, y: y };
-        case 'top': return { x: x + w / 2, y: y };
-        case 'top-right': return { x: x + w, y: y };
-        case 'right': return { x: x + w, y: y + h / 2 };
-        case 'bottom-right': return { x: x + w, y: y + h };
-        case 'bottom': return { x: x + w / 2, y: y + h };
-        case 'bottom-left': return { x: x, y: y + h };
-        case 'left': return { x: x, y: y + h / 2 };
-        default: return { x: x + w / 2, y: y + h / 2 };
+      document.getElementById('connectBtn').classList.remove('connect-mode');
+      document.getElementById('connectBtn').textContent = '创建连线';
+      
+      // 恢复卡片边缘样式
+      state.cards.forEach(card => {
+        const edges = card.el.querySelectorAll('.card-edge');
+        edges.forEach(edge => {
+          edge.style.background = 'rgba(255, 255, 255, 0.2)';
+          edge.style.border = 'none';
+        });
+      });
+      
+      // 移除临时连线
+      tempConnectionContainer.innerHTML = '';
+      typeBar.style.display = 'none';
+      
+      // 恢复提示
+      instructions.innerHTML = `
+        <span class="highlight-instruction">拖拽</span>卡片调整位置 • 
+        <span class="highlight-instruction">点击</span>卡片修改颜色 • 
+        <span class="highlight-instruction">点击底部按钮</span>创建/删除连线
+      `;
+    }
+
+    function updateTempConnection(isStarting = false) {
+      if (!state.connectingCard || !state.anchorStart) return;
+      
+      const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      tempSvg.setAttribute('width', '100%');
+      tempSvg.setAttribute('height', '100%');
+      
+      const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      tempPath.setAttribute('stroke', '#fbbf24');
+      tempPath.setAttribute('stroke-width', '3');
+      tempPath.setAttribute('stroke-dasharray', '5,5');
+      tempPath.setAttribute('fill', 'none');
+      
+      // 添加临时箭头
+      if (state.arrowType !== 'none') {
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        marker.setAttribute('id', 'temp-arrow');
+        marker.setAttribute('viewBox', '0 0 10 10');
+        marker.setAttribute('refX', state.arrowType === 'single' ? '9' : '1');
+        marker.setAttribute('refY', '5');
+        marker.setAttribute('markerWidth', '6');
+        marker.setAttribute('markerHeight', '6');
+        marker.setAttribute('orient', 'auto');
+        
+        const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        poly.setAttribute('points', '0 0, 10 5, 0 10');
+        poly.setAttribute('fill', '#fbbf24');
+        
+        marker.appendChild(poly);
+        defs.appendChild(marker);
+        tempSvg.appendChild(defs);
+        
+        if (state.arrowType === 'single') {
+          tempPath.setAttribute('marker-end', 'url(#temp-arrow)');
+        } else if (state.arrowType === 'double') {
+          tempPath.setAttribute('marker-end', 'url(#temp-arrow)');
+          
+          const startMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+          startMarker.setAttribute('id', 'temp-arrow-start');
+          startMarker.setAttribute('viewBox', '0 0 10 10');
+          startMarker.setAttribute('refX', '1');
+          startMarker.setAttribute('refY', '5');
+          startMarker.setAttribute('markerWidth', '6');
+          startMarker.setAttribute('markerHeight', '6');
+          startMarker.setAttribute('orient', 'auto');
+          
+          const polyStart = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          polyStart.setAttribute('points', '10 0, 0 5, 10 10');
+          polyStart.setAttribute('fill', '#fbbf24');
+          
+          startMarker.appendChild(polyStart);
+          defs.appendChild(startMarker);
+          tempPath.setAttribute('marker-start', 'url(#temp-arrow-start)');
+        }
+      }
+      
+      tempSvg.appendChild(tempPath);
+      tempConnectionContainer.innerHTML = '';
+      tempConnectionContainer.appendChild(tempSvg);
+      
+      if (!isStarting) {
+        // 获取鼠标位置
+        const mouseX = state.lastMouseX || (container.clientWidth / 2);
+        const mouseY = state.lastMouseY || (container.clientHeight / 2);
+        
+        // 计算起点
+        const p1 = getAnchorPoint(state.connectingCard, state.anchorStart);
+        
+        // 创建临时终点
+        const p2 = { x: mouseX, y: mouseY };
+        
+        // 更新路径
+        updatePath(tempPath, p1, p2, state.lineType);
       }
     }
 
-    function createConnection(srcCard, tgtCard, srcAnchor, tgtAnchor, type) {
+    function createConnection(srcCard, tgtCard, srcAnchor, tgtAnchor, lineType, arrowType) {
       const id = `conn-${Date.now()}`;
       
       // 创建SVG
@@ -887,7 +1124,7 @@
       // 创建箭头标记
       const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
       
-      if (type.includes('single') || type.includes('double')) {
+      if (arrowType !== 'none') {
         const endMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
         endMarker.setAttribute('id', `arrow-end-${id}`);
         endMarker.setAttribute('viewBox', '0 0 10 10');
@@ -903,7 +1140,7 @@
         defs.appendChild(endMarker);
       }
       
-      if (type.includes('double')) {
+      if (arrowType === 'double') {
         const startMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
         startMarker.setAttribute('id', `arrow-start-${id}`);
         startMarker.setAttribute('viewBox', '0 0 10 10');
@@ -929,9 +1166,9 @@
       path.setAttribute('class', 'connection-path');
       path.dataset.connId = id;
       
-      if (type.includes('single')) {
+      if (arrowType === 'single') {
         path.setAttribute('marker-end', `url(#arrow-end-${id})`);
-      } else if (type.includes('double')) {
+      } else if (arrowType === 'double') {
         path.setAttribute('marker-end', `url(#arrow-end-${id})`);
         path.setAttribute('marker-start', `url(#arrow-start-${id})`);
       }
@@ -952,7 +1189,8 @@
         tgt: tgtCard.id,
         srcAnchor,
         tgtAnchor,
-        type,
+        lineType,
+        arrowType,
         svg,
         path,
         labelEl: label,
@@ -965,22 +1203,26 @@
       updateConnection(conn);
     }
 
-    function updateConnection(conn) {
-      const src = state.cards.find(c => c.id === conn.src);
-      const tgt = state.cards.find(c => c.id === conn.tgt);
-      if (!src || !tgt) return;
+    function getAnchorPoint(card, anchor) {
+      const x = card.x;
+      const y = card.y;
+      const w = card.width;
+      const h = card.height;
       
-      const p1 = getAnchorPoint(src, conn.srcAnchor);
-      const p2 = getAnchorPoint(tgt, conn.tgtAnchor);
-      
+      switch (anchor) {
+        case 'top': return { x: x + w / 2, y: y };
+        case 'right': return { x: x + w, y: y + h / 2 };
+        case 'bottom': return { x: x + w / 2, y: y + h };
+        case 'left': return { x: x, y: y + h / 2 };
+        default: return { x: x + w / 2, y: y + h / 2 };
+      }
+    }
+
+    function updatePath(path, p1, p2, lineType) {
       let d;
-      if (conn.type.startsWith('straight')) {
+      if (lineType === 'straight') {
         // 直线
         d = `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`;
-        
-        // 标签放在中点
-        conn.labelEl.style.left = `${(p1.x + p2.x) / 2}px`;
-        conn.labelEl.style.top = `${(p1.y + p2.y) / 2}px`;
       } else {
         // 折线：计算中间点
         const dx = p2.x - p1.x;
@@ -998,13 +1240,41 @@
         }
         
         d = `M ${p1.x} ${p1.y} L ${midX} ${midY} L ${p2.x} ${p2.y}`;
+      }
+      
+      path.setAttribute('d', d);
+    }
+
+    function updateConnection(conn) {
+      const src = state.cards.find(c => c.id === conn.src);
+      const tgt = state.cards.find(c => c.id === conn.tgt);
+      if (!src || !tgt) return;
+      
+      const p1 = getAnchorPoint(src, conn.srcAnchor);
+      const p2 = getAnchorPoint(tgt, conn.tgtAnchor);
+      
+      updatePath(conn.path, p1, p2, conn.lineType);
+      
+      // 更新标签位置
+      if (conn.lineType === 'straight') {
+        conn.labelEl.style.left = `${(p1.x + p2.x) / 2}px`;
+        conn.labelEl.style.top = `${(p1.y + p2.y) / 2}px`;
+      } else {
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
         
-        // 标签放在弯曲点
+        let midX, midY;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          midX = (p1.x + p2.x) / 2;
+          midY = p1.y + dy / 3;
+        } else {
+          midX = p1.x + dx / 3;
+          midY = (p1.y + p2.y) / 2;
+        }
+        
         conn.labelEl.style.left = `${midX}px`;
         conn.labelEl.style.top = `${midY}px`;
       }
-      
-      conn.path.setAttribute('d', d);
     }
 
     function redrawConnections() {
@@ -1074,6 +1344,14 @@
     }
 
     function setupEventListeners() {
+      document.getElementById('connectBtn').addEventListener('click', () => {
+        if (state.connectMode) {
+          cancelConnectMode();
+        } else {
+          startConnectMode();
+        }
+      });
+
       document.getElementById('deleteBtn').addEventListener('click', () => {
         state.deleteMode = !state.deleteMode;
         const btn = document.getElementById('deleteBtn');
@@ -1081,6 +1359,11 @@
         if (state.deleteMode) {
           btn.classList.add('delete-mode');
           btn.textContent = '退出删除';
+          
+          // 取消连线模式
+          if (state.connectMode) {
+            cancelConnectMode();
+          }
           
           // 高亮所有连接
           document.querySelectorAll('.connection-path').forEach(path => {
@@ -1093,11 +1376,12 @@
             label.style.background = 'rgba(185, 28, 28, 0.8)';
           });
           
-          // 隐藏所有锚点
-          state.cards.forEach(card => hideAnchorPoints(card.el));
-          
           // 隐藏颜色选择器
           hideColorPicker();
+          
+          instructions.innerHTML = `
+            <span class="highlight-instruction">点击连线或标签</span>删除关系
+          `;
         } else {
           btn.classList.remove('delete-mode');
           btn.textContent = '删除连线';
@@ -1112,6 +1396,12 @@
             label.style.borderColor = '#60a5fa';
             label.style.background = 'rgba(15, 23, 42, 0.9)';
           });
+          
+          instructions.innerHTML = `
+            <span class="highlight-instruction">拖拽</span>卡片调整位置 • 
+            <span class="highlight-instruction">点击</span>卡片修改颜色 • 
+            <span class="highlight-instruction">点击底部按钮</span>创建/删除连线
+          `;
         }
       });
 
@@ -1123,6 +1413,15 @@
         if (label) {
           const id = label.dataset.connId;
           deleteConnection(id);
+        }
+      });
+
+      // 跟踪鼠标位置用于临时连线
+      container.addEventListener('pointermove', (e) => {
+        if (state.connectMode && state.connectingCard) {
+          state.lastMouseX = e.clientX - container.getBoundingClientRect().left;
+          state.lastMouseY = e.clientY - container.getBoundingClientRect().top;
+          updateTempConnection();
         }
       });
 
@@ -1147,15 +1446,26 @@
         if (!e.target.closest('.card') && 
             !e.target.closest('.color-picker') && 
             !e.target.closest('.connection-label') &&
-            !e.target.closest('.connection-type-picker') &&
-            !e.target.closest('.toolbar')) {
+            !e.target.closest('.toolbar') &&
+            !e.target.closest('.connection-type-bar')) {
           hideColorPicker();
-          if (state.connectingCard) {
-            state.connectingCard.el.style.boxShadow = '0 3px 10px rgba(0,0,0,0.4)';
-            state.connectingCard = null;
-            state.anchorStart = null;
+          
+          // 如果在连线模式且没有选择源卡片，取消连线模式
+          if (state.connectMode && !state.connectingCard) {
+            cancelConnectMode();
           }
-          state.cards.forEach(card => hideAnchorPoints(card.el));
+        }
+      });
+      
+      // 取消连线模式的快捷方式
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && (state.connectMode || state.deleteMode)) {
+          if (state.connectMode) cancelConnectMode();
+          if (state.deleteMode) {
+            state.deleteMode = false;
+            document.getElementById('deleteBtn').classList.remove('delete-mode');
+            document.getElementById('deleteBtn').textContent = '删除连线';
+          }
         }
       });
     }
@@ -1173,6 +1483,14 @@
       if (window.innerHeight > window.innerWidth) {
         alert.style.display = 'flex';
         container.style.display = 'none';
+        
+        // 确保连线模式被取消
+        if (state.connectMode) cancelConnectMode();
+        if (state.deleteMode) {
+          state.deleteMode = false;
+          document.getElementById('deleteBtn').classList.remove('delete-mode');
+          document.getElementById('deleteBtn').textContent = '删除连线';
+        }
       } else {
         alert.style.display = 'none';
         container.style.display = 'block';
@@ -1243,17 +1561,19 @@
         // 临时隐藏UI元素
         const toolbar = document.querySelector('.toolbar');
         const cp = document.getElementById('colorPicker');
-        const tp = document.getElementById('typePicker');
+        const tb = document.getElementById('typeBar');
         const watermark = document.querySelector('.watermark');
+        const instr = document.getElementById('instructions');
         
         const origTb = toolbar.style.display;
         const origCp = cp.style.display;
-        const origTp = tp.style.display;
-        const origWm = watermark.style.display;
+        const origTbDisp = tb.style.display;
+        const origInstrDisp = instr.style.display;
         
         toolbar.style.display = 'none';
         cp.style.display = 'none';
-        tp.style.display = 'none';
+        tb.style.display = 'none';
+        instr.style.display = 'none';
         
         // 添加导出水印
         const exportWatermark = document.createElement('div');
@@ -1275,8 +1595,8 @@
         // 恢复原始状态
         toolbar.style.display = origTb;
         cp.style.display = origCp;
-        tp.style.display = origTp;
-        watermark.style.display = origWm;
+        tb.style.display = origTbDisp;
+        instr.style.display = origInstrDisp;
         container.removeChild(exportWatermark);
         
         // 创建下载链接
@@ -1298,7 +1618,7 @@
     function exportXML() {
       document.getElementById('exportModal').style.display = 'none';
 
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<projectManagementBoat version="1.2">\n`;
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<projectManagementBoat version="1.3">\n`;
       
       // 元数据
       xml += `  <metadata>\n`;
@@ -1321,7 +1641,7 @@
       xml += `  <connections>\n`;
       state.connections.forEach(conn => {
         xml += `    <connection id="${conn.id}" source="${conn.src}" target="${conn.tgt}" `;
-        xml += `srcAnchor="${conn.srcAnchor}" tgtAnchor="${conn.tgtAnchor}" type="${conn.type}" `;
+        xml += `srcAnchor="${conn.srcAnchor}" tgtAnchor="${conn.tgtAnchor}" lineType="${conn.lineType}" arrowType="${conn.arrowType}" `;
         xml += `label="${escapeXml(conn.label)}"/>\n`;
       });
       xml += `  </connections>\n`;
