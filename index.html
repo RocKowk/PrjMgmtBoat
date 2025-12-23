@@ -10,7 +10,7 @@
   <title>项目管理之舟</title>
 
   <!-- PWA Manifest (内联) -->
-  <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIueVmeaKpeWtpuivvyIsCiAgInNob3J0X25hbWUiOiAi55WZ5oql5a2m6K%2F%2FIiwKICAic3RhcnRfdXJsIjogIi4vIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMWUzYThhIiwKICAidGhlbWVfY29sb3IiOiAiIzFlM2E4YSIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIj48cGF0aCBmaWxsPSIjMWUzYThhIiBkPSJNMCAwaDE5MnYxOTJIMHoiLz48dGV4dCB4PSI5NiIgeT0iOTYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI0MCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPuWVmeaKpeWtpuivvyAgPC90ZXh0Pjwvc3ZnPg==IiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQo=">
+  <link rel="manifest" href="application/manifest+json;base64,ewogICJuYW1lIjogIueVmeaKpeWtpuivvyIsCiAgInNob3J0X25hbWUiOiAi55WZ5oql5a2m6K%2F%2FIiwKICAic3RhcnRfdXJsIjogIi4vIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMWUzYThhIiwKICAidGhlbWVfY29sb3IiOiAiIzFlM2E4YSIsCiAgImljb25zIjogWwogICAgewogICAgICAic3JjIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIj48cGF0aCBmaWxsPSIjMWUzYThhIiBkPSJNMCAwaDE5MnYxOTJIMHoiLz48dGV4dCB4PSI5NiIgeT0iOTYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI0MCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPuWVmeaKpeWtpuivvyAgPC90ZXh0Pjwvc3ZnPg==IiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQo=">
 
   <style>
     * {
@@ -252,111 +252,359 @@
       touch-action: manipulation;
     }
 
-    .connection-type-bar {
-      position: absolute;
-      background: rgba(15, 23, 42, 0.95);
-      border: 2px solid #60a5fa;
-      border-radius: 30px;
-      padding: 8px;
-      display: none;
-      z-index: 50;
-      box-shadow: 0 5px 18px rgba(0, 0, 0, 0.5);
-      min-width: 240px;
-      bottom: 70px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    .type-selector {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-    }
-
-    .line-type {
-      width: 30px;
-      height: 2px;
-      background: #60a5fa;
-      position: relative;
-      cursor: pointer;
-      margin: 0 5px;
-    }
-
-    .line-type:hover {
-      background: #fbbf24;
-    }
-
-    .line-type.straight { width: 30px; }
-    .line-type.polyline { width: 30px; height: 3px; background: none; }
-    .line-type.polyline:after {
-      content: '';
-      position: absolute;
-      top: 0;
+    /* 全新设计的连线选择器 - 现代化UI */
+    .connection-selector {
+      position: fixed;
+      bottom: 0;
       left: 0;
-      width: 15px;
-      height: 2px;
-      background: #60a5fa;
-    }
-    .line-type.polyline:before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 15px;
-      width: 15px;
-      height: 2px;
-      background: #60a5fa;
-      transform: translateY(8px);
-    }
-
-    .arrow-type {
-      position: relative;
-      width: 12px;
-      height: 12px;
-      margin: 0 4px;
-      cursor: pointer;
-    }
-
-    .arrow-type.none:before { content: ''; }
-    .arrow-type.single:after {
-      content: '';
-      position: absolute;
-      top: 4px;
-      left: 0;
-      width: 0;
-      height: 0;
-      border-top: 4px solid transparent;
-      border-bottom: 4px solid transparent;
-      border-left: 6px solid #60a5fa;
-    }
-    .arrow-type.double:before,
-    .arrow-type.double:after {
-      content: '';
-      position: absolute;
-      top: 4px;
-      width: 0;
-      height: 0;
-      border-top: 4px solid transparent;
-      border-bottom: 4px solid transparent;
-    }
-    .arrow-type.double:before {
       right: 0;
-      border-left: 6px solid #60a5fa;
-    }
-    .arrow-type.double:after {
-      left: 0;
-      border-right: 6px solid #60a5fa;
+      background: linear-gradient(to top, #0f172a, #1e293b);
+      border-top: 2px solid #38bdf8;
+      border-radius: 28px 28px 0 0;
+      padding: 20px 15px 30px;
+      z-index: 150;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.4);
+      max-height: 85vh;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
-    .arrow-type:hover .arrow-type:after,
-    .arrow-type:hover .arrow-type:before {
-      border-left-color: #fbbf24;
-      border-right-color: #fbbf24;
+    .connection-selector.active {
+      transform: translateY(0);
     }
 
-    .type-label {
-      font-size: 0.75rem;
+    .selector-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 5px 15px;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+      margin-bottom: 20px;
+    }
+
+    .selector-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .selector-title svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .selector-subtitle {
+      font-size: 0.95rem;
       color: #94a3b8;
       margin-top: 4px;
+      margin-left: 34px;
+    }
+
+    .selector-close {
+      background: rgba(100, 116, 139, 0.3);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
+      color: white;
+      font-weight: bold;
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .selector-close:hover {
+      background: rgba(100, 116, 139, 0.5);
+      transform: rotate(90deg);
+    }
+
+    .selector-content {
+      padding: 0 5px;
+    }
+
+    .selector-section {
+      margin-bottom: 25px;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      color: #cbd5e1;
+      margin-bottom: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title svg {
+      width: 20px;
+      height: 20px;
+      color: #38bdf8;
+    }
+
+    /* 连线类型选择 - 全新卡片式设计 */
+    .line-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .line-option {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 16px;
+      padding: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .line-option:hover {
+      border-color: rgba(56, 189, 248, 0.6);
+      background: rgba(30, 41, 59, 0.9);
+    }
+
+    .line-option.selected {
+      background: rgba(12, 74, 110, 0.9);
+      border-color: #38bdf8;
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(0, 100, 255, 0.25);
+    }
+
+    .line-preview-container {
+      width: 90px;
+      height: 60px;
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .line-preview-bg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+    }
+
+    .line-preview-card {
+      width: 22px;
+      height: 18px;
+      background: rgba(56, 189, 248, 0.7);
+      border-radius: 4px;
+    }
+
+    .line-preview {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .line-preview svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .line-preview path {
+      stroke: #94a3b8;
+      stroke-width: 2;
+      fill: none;
+      transition: stroke 0.2s;
+    }
+
+    .line-option.selected .line-preview path {
+      stroke: #38bdf8;
+      stroke-width: 2.5;
+    }
+
+    .line-info {
+      flex: 1;
+    }
+
+    .line-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 3px;
+    }
+
+    .line-desc {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    /* 箭头类型选择 - 全新设计 */
+    .arrow-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .arrow-option {
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 16px;
+      padding: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .arrow-option:hover {
+      border-color: rgba(56, 189, 248, 0.6);
+      background: rgba(30, 41, 59, 0.9);
+    }
+
+    .arrow-option.selected {
+      background: rgba(12, 74, 110, 0.9);
+      border-color: #38bdf8;
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(0, 100, 255, 0.25);
+    }
+
+    .arrow-preview-container {
+      width: 90px;
+      height: 40px;
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .arrow-preview {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .arrow-preview svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .arrow-preview path, .arrow-preview polygon {
+      stroke: #94a3b8;
+      stroke-width: 1.5;
+      fill: none;
+      transition: all 0.2s;
+    }
+
+    .arrow-option.selected .arrow-preview path,
+    .arrow-option.selected .arrow-preview polygon {
+      stroke: #38bdf8;
+      stroke-width: 2;
+      fill: #38bdf8;
+    }
+
+    .arrow-info {
+      flex: 1;
+    }
+
+    .arrow-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 3px;
+    }
+
+    .arrow-desc {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+
+    /* 操作按钮 - 全新设计 */
+    .selector-actions {
+      display: flex;
+      gap: 15px;
+      padding: 0 5px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 14px 10px;
+      border-radius: 20px;
+      border: none;
+      font-weight: bold;
+      font-size: 1.05rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .action-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .confirm-btn {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: white;
+      border: 2px solid #38bdf8;
+    }
+
+    .confirm-btn:hover {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(2, 132, 199, 0.4);
+    }
+
+    .cancel-btn {
+      background: linear-gradient(135deg, #475569, #334155);
+      color: white;
+      border: 2px solid #64748b;
+    }
+
+    .cancel-btn:hover {
+      background: linear-gradient(135deg, #334155, #1e293b);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(51, 65, 85, 0.4);
+    }
+
+    .action-icon {
+      font-size: 1.6rem;
+      font-weight: bold;
+    }
+
+    .action-text {
+      font-size: 1.1rem;
+      font-weight: 600;
     }
 
     .export-modal {
@@ -444,10 +692,6 @@
       padding: 0 20px;
     }
 
-    .status-bar-padding {
-      height: env(safe-area-inset-top);
-    }
-
     .watermark {
       position: absolute;
       bottom: 8px;
@@ -485,17 +729,14 @@
     @supports (padding-top: env(safe-area-inset-top)) {
       body {
         padding-top: env(safe-area-inset-top);
-        padding-bottom: env(safe-area-inset-bottom);
-        padding-left: env(safe-area-inset-left);
-        padding-right: env(safe-area-inset-right);
       }
       
       .toolbar {
         bottom: calc(15px + env(safe-area-inset-bottom));
       }
       
-      .connection-type-bar {
-        bottom: calc(70px + env(safe-area-inset-bottom));
+      .connection-selector {
+        padding-bottom: calc(30px + env(safe-area-inset-bottom));
       }
     }
   </style>
@@ -508,9 +749,8 @@
 
   <div class="container" id="container">
     <div class="connections-container" id="connectionsContainer"></div>
-    <!-- Cards will be inserted by JS -->
-    
     <div class="temp-connection" id="tempConnection"></div>
+    <!-- Cards will be inserted by JS -->
 
     <div class="toolbar">
       <button class="btn" id="connectBtn">创建连线</button>
@@ -522,29 +762,154 @@
       <div class="color-grid" id="colorGrid"></div>
     </div>
 
-    <div class="connection-type-bar" id="typeBar">
-      <div class="type-selector">
-        <div class="line-type straight" data-type="straight" title="直线连接"></div>
-        <div class="line-type polyline" data-type="polyline" title="折线连接"></div>
-        <div style="flex:1"></div>
-        <div class="arrow-type none" data-type="none" title="无箭头"></div>
-        <div class="arrow-type single" data-type="single" title="单向箭头"></div>
-        <div class="arrow-type double" data-type="double" title="双向箭头"></div>
-        <div style="flex:1"></div>
-        <div style="text-align: center; margin-left: 10px;">
-          <div style="font-weight: bold; color: #fbbf24;">确认</div>
-          <div class="type-label">点击卡片完成</div>
-        </div>
-      </div>
-    </div>
-
     <div class="instructions" id="instructions">
       <span class="highlight-instruction">拖拽</span>卡片调整位置 • 
       <span class="highlight-instruction">点击</span>卡片修改颜色 • 
       <span class="highlight-instruction">点击底部按钮</span>创建/删除连线
     </div>
 
-    <div class="watermark">项目管理之舟 v1.3</div>
+    <div class="watermark">项目管理之舟 v2.1</div>
+  </div>
+
+  <!-- 全新设计的连线选择器 -->
+  <div class="connection-selector" id="connectionSelector">
+    <div class="selector-header">
+      <div>
+        <div class="selector-title">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 5L12 19M12 19L5 12M12 19L19 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          连接关系设置
+        </div>
+        <div class="selector-subtitle">选择连线样式与箭头类型</div>
+      </div>
+      <button class="selector-close" id="closeSelector">×</button>
+    </div>
+    
+    <div class="selector-content">
+      <div class="selector-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 7H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 17H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          连线样式
+        </div>
+        
+        <div class="line-options">
+          <div class="line-option selected" data-type="straight">
+            <div class="line-preview-container">
+              <div class="line-preview-bg">
+                <div class="line-preview-card"></div>
+                <div class="line-preview-card"></div>
+              </div>
+              <div class="line-preview">
+                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M 20 30 L 80 30" />
+                </svg>
+              </div>
+            </div>
+            <div class="line-info">
+              <div class="line-name">直线连接</div>
+              <div class="line-desc">直接连接两个卡片，简洁明了</div>
+            </div>
+          </div>
+          <div class="line-option" data-type="ortho">
+            <div class="line-preview-container">
+              <div class="line-preview-bg">
+                <div class="line-preview-card"></div>
+                <div class="line-preview-card"></div>
+              </div>
+              <div class="line-preview">
+                <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M 20 30 L 50 30 L 50 15 L 80 15" />
+                </svg>
+              </div>
+            </div>
+            <div class="line-info">
+              <div class="line-name">直角折线</div>
+              <div class="line-desc">90度直角转折，避免交叉重叠</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="selector-section">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 5V19M12 19L5 12M12 19L19 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          箭头类型
+        </div>
+        
+        <div class="arrow-options">
+          <div class="arrow-option" data-type="none">
+            <div class="arrow-preview-container">
+              <div class="arrow-preview">
+                <svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M 20 20 L 80 20" />
+                </svg>
+              </div>
+            </div>
+            <div class="arrow-info">
+              <div class="arrow-name">无箭头</div>
+              <div class="arrow-desc">表示双向或非方向性关系</div>
+            </div>
+          </div>
+          <div class="arrow-option selected" data-type="single">
+            <div class="arrow-preview-container">
+              <div class="arrow-preview">
+                <svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <marker id="arrowhead-single" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                      <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" stroke="#94a3b8" stroke-width="1" />
+                    </marker>
+                  </defs>
+                  <path d="M 20 20 L 80 20" marker-end="url(#arrowhead-single)" />
+                </svg>
+              </div>
+            </div>
+            <div class="arrow-info">
+              <div class="arrow-name">单箭头</div>
+              <div class="arrow-desc">表示单向依赖或影响关系</div>
+            </div>
+          </div>
+          <div class="arrow-option" data-type="double">
+            <div class="arrow-preview-container">
+              <div class="arrow-preview">
+                <svg viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <marker id="arrowhead-start" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto">
+                      <polygon points="10 0, 0 3.5, 10 7" fill="#94a3b8" stroke="#94a3b8" stroke-width="1" />
+                    </marker>
+                    <marker id="arrowhead-end" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                      <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" stroke="#94a3b8" stroke-width="1" />
+                    </marker>
+                  </defs>
+                  <path d="M 20 20 L 80 20" marker-start="url(#arrowhead-start)" marker-end="url(#arrowhead-end)" />
+                </svg>
+              </div>
+            </div>
+            <div class="arrow-info">
+              <div class="arrow-name">双箭头</div>
+              <div class="arrow-desc">表示双向影响或互赖关系</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="selector-actions">
+      <button class="action-btn cancel-btn" id="cancelConnection">
+        <div class="action-icon">✕</div>
+        <div class="action-text">取消</div>
+      </button>
+      <button class="action-btn confirm-btn" id="confirmConnection">
+        <div class="action-icon">✓</div>
+        <div class="action-text">完成</div>
+      </button>
+    </div>
   </div>
 
   <div class="export-modal" id="exportModal">
@@ -610,15 +975,14 @@
       connections: [],
       selectedCard: null,
       connectingCard: null,
+      sourceSide: null,
       deleteMode: false,
       connectMode: false,
-      lineType: 'straight', // 'straight' or 'polyline'
+      lineType: 'straight', // 'straight' or 'ortho'
       arrowType: 'single',  // 'none', 'single', 'double'
       isDragging: false,
       dragOffset: { x: 0, y: 0 },
       tempConnection: null,
-      anchorStart: null, // 'top' | 'right' | 'bottom' | 'left'
-      anchorEnd: null,
       lastColorSelection: {}
     };
 
@@ -627,14 +991,14 @@
     const tempConnectionContainer = document.getElementById('tempConnection');
     const colorPicker = document.getElementById('colorPicker');
     const colorGrid = document.getElementById('colorGrid');
-    const typeBar = document.getElementById('typeBar');
+    const connectionSelector = document.getElementById('connectionSelector');
     const instructions = document.getElementById('instructions');
 
     // Init
     function init() {
       createCards();
       createColorPicker();
-      setupTypeBar();
+      setupConnectionSelector();
       setupEventListeners();
       checkOrientation();
       initWatermark();
@@ -791,53 +1155,104 @@
       });
     }
 
-    function setupTypeBar() {
-      // 设置线条类型
-      const lineTypes = typeBar.querySelectorAll('.line-type');
-      lineTypes.forEach(el => {
-        el.addEventListener('click', () => {
-          state.lineType = el.dataset.type;
+    function setupConnectionSelector() {
+      // 设置连线类型选择
+      const lineOptions = connectionSelector.querySelectorAll('.line-option');
+      lineOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          state.lineType = option.dataset.type;
           
-          // 更新高亮
-          lineTypes.forEach(l => l.style.background = l.dataset.type === state.lineType ? '#fbbf24' : '#60a5fa');
+          // 更新选中状态
+          lineOptions.forEach(opt => opt.classList.remove('selected'));
+          option.classList.add('selected');
           
+          // 更新临时连线
           updateTempConnection();
         });
       });
       
-      // 设置箭头类型
-      const arrowTypes = typeBar.querySelectorAll('.arrow-type');
-      arrowTypes.forEach(el => {
-        el.addEventListener('click', () => {
-          state.arrowType = el.dataset.type;
+      // 设置箭头类型选择
+      const arrowOptions = connectionSelector.querySelectorAll('.arrow-option');
+      arrowOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          state.arrowType = option.dataset.type;
           
-          // 更新高亮
-          arrowTypes.forEach(a => {
-            if (a.dataset.type === state.arrowType) {
-              a.style.borderColor = '#fbbf24';
-              if (a.classList.contains('single')) a.style.borderLeftColor = '#fbbf24';
-              if (a.classList.contains('double')) {
-                a.style.borderLeftColor = '#fbbf24';
-                a.style.borderRightColor = '#fbbf24';
-              }
-            } else {
-              a.style.borderColor = '#60a5fa';
-              if (a.classList.contains('single')) a.style.borderLeftColor = '#60a5fa';
-              if (a.classList.contains('double')) {
-                a.style.borderLeftColor = '#60a5fa';
-                a.style.borderRightColor = '#60a5fa';
-              }
-            }
-          });
+          // 更新选中状态
+          arrowOptions.forEach(opt => opt.classList.remove('selected'));
+          option.classList.add('selected');
           
+          // 更新临时连线
           updateTempConnection();
         });
       });
+      
+      // 关闭选择器
+      document.getElementById('closeSelector').addEventListener('click', cancelConnection);
+      document.getElementById('cancelConnection').addEventListener('click', cancelConnection);
+      
+      // 确认连接
+      document.getElementById('confirmConnection').addEventListener('click', confirmConnection);
       
       // 初始化选中状态
-      document.querySelector('.line-type.straight').style.background = '#fbbf24';
-      document.querySelector('.arrow-type.single').style.borderLeftColor = '#fbbf24';
-      document.querySelector('.arrow-type.single').style.borderColor = '#fbbf24';
+      document.querySelector('.line-option[data-type="straight"]').classList.add('selected');
+      document.querySelector('.arrow-option[data-type="single"]').classList.add('selected');
+    }
+
+    function showConnectionSelector() {
+      // 如果已经在选择器中，不做任何操作
+      if (connectionSelector.classList.contains('active')) return;
+      
+      connectionSelector.classList.add('active');
+      
+      // 暂停滚动
+      document.body.style.overflow = 'hidden';
+      
+      // 更新提示
+      instructions.innerHTML = `
+        <span class="highlight-instruction">选择连线样式和箭头类型</span>，然后
+        <span class="highlight-instruction">点击目标卡片边缘</span>完成连线
+      `;
+    }
+
+    function hideConnectionSelector() {
+      connectionSelector.classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+
+    function cancelConnection() {
+      hideConnectionSelector();
+      
+      if (state.connectingCard) {
+        state.connectingCard.el.classList.remove('source-card');
+        state.connectingCard = null;
+        state.sourceSide = null;
+      }
+      
+      state.connectMode = false;
+      
+      // 隐藏临时连线
+      tempConnectionContainer.innerHTML = '';
+      
+      // 更新按钮状态
+      document.getElementById('connectBtn').classList.remove('connect-mode');
+      document.getElementById('connectBtn').textContent = '创建连线';
+      
+      // 恢复提示
+      instructions.innerHTML = `
+        <span class="highlight-instruction">拖拽</span>卡片调整位置 • 
+        <span class="highlight-instruction">点击</span>卡片修改颜色 • 
+        <span class="highlight-instruction">点击底部按钮</span>创建/删除连线
+      `;
+    }
+
+    function confirmConnection() {
+      // 仅隐藏选择器，不取消连接模式
+      hideConnectionSelector();
+      
+      instructions.innerHTML = `
+        <span class="highlight-instruction">已选择连线样式</span>，现在
+        <span class="highlight-instruction">点击目标卡片边缘</span>完成连线
+      `;
     }
 
     function makeDraggable(card) {
@@ -897,8 +1312,8 @@
         redrawConnections();
         
         // 更新临时连线
-        if (state.connectingCard) {
-          updateTempConnection();
+        if (state.connectingCard && state.sourceSide) {
+          updateTempConnection(e.clientX, e.clientY);
         }
       });
       
@@ -928,31 +1343,34 @@
             if (!state.connectingCard) {
               // 第一个卡片被选中
               state.connectingCard = state.cards.find(c => c.el === card);
-              state.anchorStart = side;
+              state.sourceSide = side;
               
               card.classList.add('source-card');
               
-              // 显示类型选择栏
-              typeBar.style.display = 'block';
+              // 显示连接类型选择器
+              showConnectionSelector();
               
-              // 更新提示
-              instructions.innerHTML = `
-                <span class="highlight-instruction">选择连接类型</span>，然后
-                <span class="highlight-instruction">点击目标卡片边缘</span>完成连线
-              `;
-              
-              updateTempConnection(true);
+              // 创建临时连线
+              createTempConnection();
             } else {
               // 第二个卡片被选中，完成连线
+              if (connectionSelector.classList.contains('active')) {
+                // 如果选择器还打开，先确认
+                confirmConnection();
+              }
+              
               const targetCard = state.cards.find(c => c.el === card);
               
               if (state.connectingCard.id !== targetCard.id) {
+                // 确定目标边缘
+                const targetSide = determineTargetSide(state.connectingCard, targetCard, side);
+                
                 // 创建连接
                 createConnection(
                   state.connectingCard, 
                   targetCard, 
-                  state.anchorStart, 
-                  side, 
+                  state.sourceSide, 
+                  targetSide, 
                   state.lineType, 
                   state.arrowType
                 );
@@ -961,11 +1379,11 @@
               // 重置状态
               state.connectingCard.el.classList.remove('source-card');
               state.connectingCard = null;
-              state.anchorStart = null;
+              state.sourceSide = null;
               state.connectMode = false;
               
               // 隐藏UI
-              typeBar.style.display = 'none';
+              hideConnectionSelector();
               tempConnectionContainer.innerHTML = '';
               
               // 更新按钮状态
@@ -984,10 +1402,35 @@
       });
     }
 
+    function determineTargetSide(sourceCard, targetCard, clickedSide) {
+      // 计算两个卡片中心点
+      const sourceCenter = {
+        x: sourceCard.x + sourceCard.width / 2,
+        y: sourceCard.y + sourceCard.height / 2
+      };
+      
+      const targetCenter = {
+        x: targetCard.x + targetCard.width / 2,
+        y: targetCard.y + targetCard.height / 2
+      };
+      
+      // 计算方向向量
+      const dx = targetCenter.x - sourceCenter.x;
+      const dy = targetCenter.y - sourceCenter.y;
+      
+      // 根据角度确定最佳目标边缘
+      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      
+      if (angle > -45 && angle <= 45) return 'left';     // 右
+      if (angle > 45 && angle <= 135) return 'top';      // 下
+      if (angle > 135 || angle <= -135) return 'right';  // 左
+      return 'bottom';                                   // 上
+    }
+
     function startConnectMode() {
       state.connectMode = true;
       document.getElementById('connectBtn').classList.add('connect-mode');
-      document.getElementById('connectBtn').textContent = '选择源卡片边缘';
+      document.getElementById('connectBtn').textContent = '选择源卡片';
       
       // 高亮所有卡片边缘
       state.cards.forEach(card => {
@@ -1003,38 +1446,7 @@
       `;
     }
 
-    function cancelConnectMode() {
-      state.connectMode = false;
-      state.connectingCard = null;
-      state.anchorStart = null;
-      
-      document.getElementById('connectBtn').classList.remove('connect-mode');
-      document.getElementById('connectBtn').textContent = '创建连线';
-      
-      // 恢复卡片边缘样式
-      state.cards.forEach(card => {
-        const edges = card.el.querySelectorAll('.card-edge');
-        edges.forEach(edge => {
-          edge.style.background = 'rgba(255, 255, 255, 0.2)';
-          edge.style.border = 'none';
-        });
-      });
-      
-      // 移除临时连线
-      tempConnectionContainer.innerHTML = '';
-      typeBar.style.display = 'none';
-      
-      // 恢复提示
-      instructions.innerHTML = `
-        <span class="highlight-instruction">拖拽</span>卡片调整位置 • 
-        <span class="highlight-instruction">点击</span>卡片修改颜色 • 
-        <span class="highlight-instruction">点击底部按钮</span>创建/删除连线
-      `;
-    }
-
-    function updateTempConnection(isStarting = false) {
-      if (!state.connectingCard || !state.anchorStart) return;
-      
+    function createTempConnection() {
       const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       tempSvg.setAttribute('width', '100%');
       tempSvg.setAttribute('height', '100%');
@@ -1044,32 +1456,31 @@
       tempPath.setAttribute('stroke-width', '3');
       tempPath.setAttribute('stroke-dasharray', '5,5');
       tempPath.setAttribute('fill', 'none');
+      tempPath.setAttribute('id', 'tempPath');
       
-      // 添加临时箭头
+      // 创建箭头标记
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      
       if (state.arrowType !== 'none') {
-        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-        marker.setAttribute('id', 'temp-arrow');
-        marker.setAttribute('viewBox', '0 0 10 10');
-        marker.setAttribute('refX', state.arrowType === 'single' ? '9' : '1');
-        marker.setAttribute('refY', '5');
-        marker.setAttribute('markerWidth', '6');
-        marker.setAttribute('markerHeight', '6');
-        marker.setAttribute('orient', 'auto');
+        const endMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        endMarker.setAttribute('id', 'temp-arrow-end');
+        endMarker.setAttribute('viewBox', '0 0 10 10');
+        endMarker.setAttribute('refX', '9');
+        endMarker.setAttribute('refY', '5');
+        endMarker.setAttribute('markerWidth', '6');
+        endMarker.setAttribute('markerHeight', '6');
+        endMarker.setAttribute('orient', 'auto');
         
-        const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-        poly.setAttribute('points', '0 0, 10 5, 0 10');
-        poly.setAttribute('fill', '#fbbf24');
+        const polyEnd = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        polyEnd.setAttribute('points', '0 0, 10 5, 0 10');
+        polyEnd.setAttribute('fill', '#fbbf24');
         
-        marker.appendChild(poly);
-        defs.appendChild(marker);
-        tempSvg.appendChild(defs);
+        endMarker.appendChild(polyEnd);
+        defs.appendChild(endMarker);
         
         if (state.arrowType === 'single') {
-          tempPath.setAttribute('marker-end', 'url(#temp-arrow)');
+          tempPath.setAttribute('marker-end', 'url(#temp-arrow-end)');
         } else if (state.arrowType === 'double') {
-          tempPath.setAttribute('marker-end', 'url(#temp-arrow)');
-          
           const startMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
           startMarker.setAttribute('id', 'temp-arrow-start');
           startMarker.setAttribute('viewBox', '0 0 10 10');
@@ -1086,27 +1497,46 @@
           startMarker.appendChild(polyStart);
           defs.appendChild(startMarker);
           tempPath.setAttribute('marker-start', 'url(#temp-arrow-start)');
+          tempPath.setAttribute('marker-end', 'url(#temp-arrow-end)');
         }
       }
       
+      tempSvg.appendChild(defs);
       tempSvg.appendChild(tempPath);
       tempConnectionContainer.innerHTML = '';
       tempConnectionContainer.appendChild(tempSvg);
+    }
+
+    function updateTempConnection(clientX, clientY) {
+      if (!state.connectingCard || !state.sourceSide) return;
       
-      if (!isStarting) {
-        // 获取鼠标位置
-        const mouseX = state.lastMouseX || (container.clientWidth / 2);
-        const mouseY = state.lastMouseY || (container.clientHeight / 2);
-        
-        // 计算起点
-        const p1 = getAnchorPoint(state.connectingCard, state.anchorStart);
-        
-        // 创建临时终点
-        const p2 = { x: mouseX, y: mouseY };
-        
-        // 更新路径
-        updatePath(tempPath, p1, p2, state.lineType);
+      const tempPath = document.getElementById('tempPath');
+      if (!tempPath) return;
+      
+      // 获取容器位置
+      const containerRect = container.getBoundingClientRect();
+      
+      // 计算起点
+      const p1 = getAnchorPoint(state.connectingCard, state.sourceSide);
+      
+      // 计算终点
+      let p2;
+      if (clientX && clientY) {
+        // 使用鼠标位置
+        p2 = {
+          x: clientX - containerRect.left,
+          y: clientY - containerRect.top
+        };
+      } else {
+        // 使用容器中心
+        p2 = {
+          x: containerRect.width / 2,
+          y: containerRect.height / 2
+        };
       }
+      
+      // 更新路径
+      updatePath(tempPath, p1, p2, state.lineType, state.arrowType);
     }
 
     function createConnection(srcCard, tgtCard, srcAnchor, tgtAnchor, lineType, arrowType) {
@@ -1218,26 +1648,43 @@
       }
     }
 
-    function updatePath(path, p1, p2, lineType) {
+    function updatePath(path, p1, p2, lineType, arrowType) {
       let d;
+      
       if (lineType === 'straight') {
         // 直线
         d = `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`;
-      } else {
-        // 折线：计算中间点
+      } else if (lineType === 'ortho') {
+        // 直角折线 - 智能选择转折点
         const dx = p2.x - p1.x;
         const dy = p2.y - p1.y;
         
         let midX, midY;
+        
+        // 选择最佳转折方向
         if (Math.abs(dx) > Math.abs(dy)) {
-          // 水平主导
-          midX = (p1.x + p2.x) / 2;
-          midY = p1.y + dy / 3;
+          // 水平主导 - 先水平，再垂直
+          if (p1.x < p2.x) {
+            midX = p2.x;
+            midY = p1.y;
+          } else {
+            midX = p1.x;
+            midY = p2.y;
+          }
         } else {
-          // 垂直主导
-          midX = p1.x + dx / 3;
-          midY = (p1.y + p2.y) / 2;
+          // 垂直主导 - 先垂直，再水平
+          if (p1.y < p2.y) {
+            midX = p1.x;
+            midY = p2.y;
+          } else {
+            midX = p2.x;
+            midY = p1.y;
+          }
         }
+        
+        // 确保转折点在合理范围内
+        midX = Math.max(0, Math.min(container.clientWidth, midX));
+        midY = Math.max(0, Math.min(container.clientHeight, midY));
         
         d = `M ${p1.x} ${p1.y} L ${midX} ${midY} L ${p2.x} ${p2.y}`;
       }
@@ -1253,22 +1700,26 @@
       const p1 = getAnchorPoint(src, conn.srcAnchor);
       const p2 = getAnchorPoint(tgt, conn.tgtAnchor);
       
-      updatePath(conn.path, p1, p2, conn.lineType);
+      updatePath(conn.path, p1, p2, conn.lineType, conn.arrowType);
       
       // 更新标签位置
       if (conn.lineType === 'straight') {
         conn.labelEl.style.left = `${(p1.x + p2.x) / 2}px`;
         conn.labelEl.style.top = `${(p1.y + p2.y) / 2}px`;
-      } else {
+      } else if (conn.lineType === 'ortho') {
+        // 直角折线 - 标签放在中间点
         const dx = p2.x - p1.x;
         const dy = p2.y - p1.y;
         
         let midX, midY;
+        
         if (Math.abs(dx) > Math.abs(dy)) {
+          // 水平主导
           midX = (p1.x + p2.x) / 2;
-          midY = p1.y + dy / 3;
+          midY = p1.y;
         } else {
-          midX = p1.x + dx / 3;
+          // 垂直主导
+          midX = p1.x;
           midY = (p1.y + p2.y) / 2;
         }
         
@@ -1346,7 +1797,7 @@
     function setupEventListeners() {
       document.getElementById('connectBtn').addEventListener('click', () => {
         if (state.connectMode) {
-          cancelConnectMode();
+          cancelConnection();
         } else {
           startConnectMode();
         }
@@ -1362,7 +1813,7 @@
           
           // 取消连线模式
           if (state.connectMode) {
-            cancelConnectMode();
+            cancelConnection();
           }
           
           // 高亮所有连接
@@ -1418,10 +1869,8 @@
 
       // 跟踪鼠标位置用于临时连线
       container.addEventListener('pointermove', (e) => {
-        if (state.connectMode && state.connectingCard) {
-          state.lastMouseX = e.clientX - container.getBoundingClientRect().left;
-          state.lastMouseY = e.clientY - container.getBoundingClientRect().top;
-          updateTempConnection();
+        if (state.connectMode && state.connectingCard && state.sourceSide) {
+          updateTempConnection(e.clientX, e.clientY);
         }
       });
 
@@ -1447,25 +1896,35 @@
             !e.target.closest('.color-picker') && 
             !e.target.closest('.connection-label') &&
             !e.target.closest('.toolbar') &&
-            !e.target.closest('.connection-type-bar')) {
+            !e.target.closest('.connection-selector')) {
           hideColorPicker();
           
           // 如果在连线模式且没有选择源卡片，取消连线模式
           if (state.connectMode && !state.connectingCard) {
-            cancelConnectMode();
+            cancelConnection();
           }
         }
       });
       
       // 取消连线模式的快捷方式
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && (state.connectMode || state.deleteMode)) {
-          if (state.connectMode) cancelConnectMode();
-          if (state.deleteMode) {
+        if (e.key === 'Escape') {
+          if (connectionSelector.classList.contains('active')) {
+            cancelConnection();
+          } else if (state.connectMode) {
+            cancelConnection();
+          } else if (state.deleteMode) {
             state.deleteMode = false;
             document.getElementById('deleteBtn').classList.remove('delete-mode');
             document.getElementById('deleteBtn').textContent = '删除连线';
           }
+        }
+      });
+      
+      // 点击遮罩层关闭选择器
+      connectionSelector.addEventListener('click', (e) => {
+        if (e.target === connectionSelector) {
+          cancelConnection();
         }
       });
     }
@@ -1485,11 +1944,16 @@
         container.style.display = 'none';
         
         // 确保连线模式被取消
-        if (state.connectMode) cancelConnectMode();
+        if (state.connectMode) cancelConnection();
         if (state.deleteMode) {
           state.deleteMode = false;
           document.getElementById('deleteBtn').classList.remove('delete-mode');
           document.getElementById('deleteBtn').textContent = '删除连线';
+        }
+        
+        // 关闭选择器
+        if (connectionSelector.classList.contains('active')) {
+          hideConnectionSelector();
         }
       } else {
         alert.style.display = 'none';
@@ -1517,6 +1981,11 @@
       });
       
       redrawConnections();
+      
+      // 更新临时连线
+      if (state.connectingCard && state.sourceSide) {
+        updateTempConnection();
+      }
     }
 
     function getOptimalPositions(width, height) {
@@ -1551,6 +2020,38 @@
       return positions;
     }
 
+    function showColorPicker(card) {
+      if (!state.selectedCard) return;
+      
+      // 恢复上次选择的颜色
+      if (state.lastColorSelection[state.selectedCard.id] !== undefined) {
+        const items = colorGrid.querySelectorAll('.color-item');
+        items.forEach((item, index) => {
+          item.classList.toggle('selected', index === state.lastColorSelection[state.selectedCard.id]);
+        });
+      }
+      
+      const rect = card.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      
+      // 在卡片上方显示，避免被工具栏遮挡
+      let left = rect.left + rect.width / 2 - 110; // 220px/2 = 110px
+      let top = rect.top - 60; // 颜色选择器高度约50px + 10px间距
+      
+      // 检查边界
+      if (left < containerRect.left + 5) left = containerRect.left + 5;
+      if (left + 220 > containerRect.right - 5) left = containerRect.right - 225;
+      if (top < containerRect.top + 5) top = rect.bottom + 5;
+      
+      colorPicker.style.left = `${left - containerRect.left}px`;
+      colorPicker.style.top = `${top - containerRect.top}px`;
+      colorPicker.style.display = 'block';
+    }
+
+    function hideColorPicker() {
+      colorPicker.style.display = 'none';
+    }
+
     // Export functions
     async function exportJPG() {
       document.getElementById('exportModal').style.display = 'none';
@@ -1561,18 +2062,18 @@
         // 临时隐藏UI元素
         const toolbar = document.querySelector('.toolbar');
         const cp = document.getElementById('colorPicker');
-        const tb = document.getElementById('typeBar');
+        const cs = document.getElementById('connectionSelector');
         const watermark = document.querySelector('.watermark');
         const instr = document.getElementById('instructions');
         
         const origTb = toolbar.style.display;
         const origCp = cp.style.display;
-        const origTbDisp = tb.style.display;
+        const origCs = cs.style.display;
         const origInstrDisp = instr.style.display;
         
         toolbar.style.display = 'none';
         cp.style.display = 'none';
-        tb.style.display = 'none';
+        cs.style.display = 'none';
         instr.style.display = 'none';
         
         // 添加导出水印
@@ -1595,7 +2096,7 @@
         // 恢复原始状态
         toolbar.style.display = origTb;
         cp.style.display = origCp;
-        tb.style.display = origTbDisp;
+        cs.style.display = origCs;
         instr.style.display = origInstrDisp;
         container.removeChild(exportWatermark);
         
@@ -1618,7 +2119,7 @@
     function exportXML() {
       document.getElementById('exportModal').style.display = 'none';
 
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<projectManagementBoat version="1.3">\n`;
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<projectManagementBoat version="2.1">\n`;
       
       // 元数据
       xml += `  <metadata>\n`;
