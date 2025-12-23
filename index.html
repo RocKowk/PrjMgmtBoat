@@ -2,99 +2,115 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>项目管理之舟</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* 重置与基础样式 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            touch-action: none;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         
-        body {
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
-            color: #333;
-            overflow: hidden;
+        html, body {
             width: 100vw;
             height: 100vh;
+            overflow: hidden;
             position: fixed;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
+        /* 容器布局 */
         .container {
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             position: relative;
+            overflow: hidden;
         }
         
+        /* 顶部导航栏 */
         header {
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 12px 20px;
+            background-color: rgba(255, 255, 255, 0.98);
+            padding: 10px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             z-index: 100;
             position: relative;
+            min-height: 56px;
+            flex-shrink: 0;
         }
         
         h1 {
             color: #1a2980;
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            font-weight: 700;
         }
         
         h1 i {
             color: #26d0ce;
+            font-size: 1.3rem;
         }
         
         .controls {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             align-items: center;
         }
         
+        /* 按钮样式 */
         button {
             background-color: #1a2980;
             color: white;
             border: none;
-            padding: 10px 18px;
-            border-radius: 6px;
+            padding: 8px 14px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             transition: all 0.3s ease;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            min-height: 36px;
         }
         
-        button:hover {
+        button:active {
             background-color: #2a3cb0;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transform: scale(0.98);
         }
         
         button#deleteLineBtn {
             background-color: #e74c3c;
         }
         
-        button#deleteLineBtn:hover {
+        button#deleteLineBtn:active {
             background-color: #c0392b;
         }
         
+        /* 主要内容区域 */
         .content {
             flex: 1;
             position: relative;
             overflow: hidden;
+            width: 100%;
+            height: calc(100vh - 76px);
         }
         
+        /* Canvas用于绘制连线 */
         #canvas {
             position: absolute;
             top: 0;
@@ -105,6 +121,7 @@
             pointer-events: none;
         }
         
+        /* 卡片容器 */
         .cards-container {
             position: absolute;
             top: 0;
@@ -115,69 +132,71 @@
             pointer-events: none;
         }
         
+        /* 卡片样式 */
         .card {
             position: absolute;
-            width: 180px;
-            min-height: 140px;
+            width: 150px;
+            min-height: 130px;
             background-color: #ffffff;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            padding: 12px;
             cursor: move;
             pointer-events: auto;
-            transition: box-shadow 0.3s ease;
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
             user-select: none;
             z-index: 10;
+            -webkit-user-drag: none;
         }
         
-        .card:hover {
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        .card:active {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+            transform: scale(1.02);
         }
         
         .card.dragging {
-            opacity: 0.9;
+            opacity: 0.95;
             z-index: 100;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
         }
         
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .card-title {
             font-weight: 700;
-            font-size: 1rem;
-            line-height: 1.3;
-            color: #1a2980;
+            font-size: 0.9rem;
+            line-height: 1.25;
+            word-break: break-word;
         }
         
         .card-subtitle {
             font-weight: 600;
-            font-size: 0.9rem;
-            color: #26d0ce;
-            margin-top: 5px;
+            font-size: 0.8rem;
+            margin-top: 4px;
         }
         
-        /* 修改颜色选择器为2行3列布局 */
+        /* 颜色选择器 - 2行3列布局 */
         .color-picker {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-top: 12px;
+            gap: 6px;
+            margin-top: 10px;
         }
         
         .color-row {
             display: flex;
             justify-content: space-between;
-            gap: 5px;
+            gap: 4px;
         }
         
         .color-option {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid transparent;
@@ -185,7 +204,7 @@
             flex-shrink: 0;
         }
         
-        .color-option:hover {
+        .color-option:active {
             transform: scale(1.2);
         }
         
@@ -194,6 +213,7 @@
             transform: scale(1.1);
         }
         
+        /* 连接点样式 */
         .connection-points {
             position: absolute;
             width: 100%;
@@ -207,56 +227,66 @@
             position: absolute;
             width: 16px;
             height: 16px;
-            background-color: rgba(26, 41, 128, 0.7);
+            background-color: rgba(26, 41, 128, 0.8);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             pointer-events: auto;
-            cursor: crosshair;
+            cursor: pointer;
             z-index: 5;
             border: 2px solid white;
+            transition: transform 0.2s ease, background-color 0.2s ease;
         }
         
-        .connection-point:hover {
+        .connection-point:active {
             background-color: #1a2980;
-            transform: translate(-50%, -50%) scale(1.2);
+            transform: translate(-50%, -50%) scale(1.3);
         }
         
+        /* 连线工具面板 */
         .line-type-selector {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            bottom: 16px;
+            left: 16px;
+            background-color: rgba(255, 255, 255, 0.98);
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
             z-index: 50;
-            width: 260px;
+            width: 220px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
         
         .line-type-selector h3 {
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             color: #1a2980;
-            font-size: 1.1rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         
         .line-type-options {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
         
         .line-type-btn {
-            padding: 8px 12px;
+            padding: 7px 10px;
             background-color: #f0f0f0;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             transition: all 0.2s ease;
+            min-width: 60px;
+            text-align: center;
         }
         
-        .line-type-btn:hover {
+        .line-type-btn:active {
             background-color: #e0e0e0;
+            transform: scale(0.98);
         }
         
         .line-type-btn.active {
@@ -266,90 +296,179 @@
         
         .annotation-input {
             width: 100%;
-            padding: 8px;
+            padding: 8px 10px;
             border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 0.9rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            background-color: #f9f9f9;
         }
         
+        .annotation-input:focus {
+            outline: none;
+            border-color: #1a2980;
+            background-color: white;
+        }
+        
+        /* 模态框 */
         .modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.85);
             z-index: 200;
             justify-content: center;
             align-items: center;
+            padding: 16px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
         }
         
         .modal-content {
             background-color: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 24px;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         .modal h2 {
             color: #1a2980;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .modal p {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             line-height: 1.5;
+            font-size: 0.9rem;
         }
         
         .modal-buttons {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             justify-content: flex-end;
-            margin-top: 25px;
+            margin-top: 20px;
         }
         
         .export-options {
             display: flex;
-            gap: 15px;
+            flex-direction: column;
+            gap: 12px;
             margin-top: 20px;
         }
         
+        /* 页脚 */
         footer {
             text-align: center;
-            padding: 10px;
-            background-color: rgba(255, 255, 255, 0.8);
-            font-size: 0.85rem;
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.9);
+            font-size: 0.75rem;
             color: #666;
             z-index: 100;
             position: relative;
+            line-height: 1.4;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
         
-        @media (max-width: 768px) {
+        /* iPhone 13 Mini 横屏优化 */
+        @media (orientation: landscape) and (max-height: 400px) {
             .card {
-                width: 160px;
-                min-height: 140px;
+                width: 140px;
+                min-height: 120px;
+                padding: 10px;
             }
             
-            h1 {
-                font-size: 1.5rem;
-            }
-            
-            button {
-                padding: 8px 12px;
+            .card-title {
                 font-size: 0.85rem;
             }
             
-            .line-type-selector {
-                width: 240px;
+            .card-subtitle {
+                font-size: 0.75rem;
             }
             
             .color-option {
-                width: 20px;
-                height: 20px;
+                width: 18px;
+                height: 18px;
             }
+            
+            .line-type-selector {
+                width: 200px;
+                padding: 10px;
+            }
+            
+            .line-type-btn {
+                padding: 6px 8px;
+                font-size: 0.75rem;
+                min-width: 55px;
+            }
+            
+            header {
+                padding: 8px 12px;
+                min-height: 48px;
+            }
+            
+            h1 {
+                font-size: 1.2rem;
+            }
+            
+            button {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+                min-height: 32px;
+            }
+            
+            .content {
+                height: calc(100vh - 64px);
+            }
+        }
+        
+        /* 防止横屏时字体过大 */
+        @media (orientation: landscape) and (min-width: 812px) {
+            html {
+                font-size: 14px;
+            }
+        }
+        
+        /* 高DPI屏幕优化 */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .card {
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            }
+            
+            .line-type-selector {
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+        }
+        
+        /* 状态指示器 */
+        .status-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: #1a2980;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -365,7 +484,7 @@
                     <i class="fas fa-trash-alt"></i> 删除连线
                 </button>
                 <button id="exportBtn">
-                    <i class="fas fa-download"></i> 导出结果
+                    <i class="fas fa-download"></i> 导出
                 </button>
             </div>
         </header>
@@ -376,6 +495,12 @@
                 <!-- 卡片将通过JS动态生成 -->
             </div>
             
+            <!-- 状态指示器 -->
+            <div class="status-indicator" id="statusIndicator">
+                <i class="fas fa-mouse-pointer"></i> <span>选择连接点创建连线</span>
+            </div>
+            
+            <!-- 连线工具面板 -->
             <div class="line-type-selector">
                 <h3><i class="fas fa-project-diagram"></i> 连线工具</h3>
                 <div class="line-type-options">
@@ -397,8 +522,8 @@
         <div class="modal" id="helpModal">
             <div class="modal-content">
                 <h2><i class="fas fa-life-ring"></i> 游戏使用说明</h2>
-                <p><strong>项目管理之舟</strong>是一个互动式的项目管理知识图谱构建工具。</p>
-                <ul style="margin-left: 20px; margin-bottom: 20px;">
+                <p><strong>项目管理之舟</strong>是一个互动式的项目管理知识图谱构建工具。通过可视化方式展示项目管理各个领域之间的关系。</p>
+                <ul style="margin-left: 20px; margin-bottom: 20px; font-size: 0.9rem;">
                     <li><strong>移动卡片</strong>：拖动卡片到任意位置</li>
                     <li><strong>更改颜色</strong>：点击卡片下方的颜色圆点（每行3个，共2行）</li>
                     <li><strong>创建连线</strong>：点击卡片边缘的连接点，然后点击另一个卡片的连接点</li>
@@ -406,6 +531,8 @@
                     <li><strong>添加注释</strong>：在连线工具中输入文字，创建连线时会自动添加</li>
                     <li><strong>删除连线</strong>：点击"删除连线"按钮，然后点击要删除的连线</li>
                     <li><strong>导出结果</strong>：点击"导出结果"按钮，可以保存为JPG图片或XML文件</li>
+                    <li><strong>颜色对比</strong>：卡片标题颜色会自动调整为与背景高对比度的颜色</li>
+                    <li><strong>连接点位置</strong>：只能在卡片四条边的中点位置连接</li>
                 </ul>
                 <div class="modal-buttons">
                     <button id="closeHelpBtn">关闭</button>
@@ -434,7 +561,7 @@
     </div>
 
     <script>
-        // 卡片数据
+        // 卡片数据 - 包含标题和副标题
         const cardsData = [
             { id: 1, title: "花多长时间做？", subtitle: "进度管理" },
             { id: 2, title: "如何实现整体最优？", subtitle: "整合管理" },
@@ -448,9 +575,14 @@
             { id: 10, title: "有哪些人/财/事会增加难度？", subtitle: "风险管理" }
         ];
 
-        // 颜色选项
+        // 6种显著区分的颜色选项
         const colorOptions = [
-            '#FF6B6B', '#4ECDC4', '#FFD166', '#06D6A0', '#118AB2', '#9D4EDD'
+            '#FF6B6B', // 红色
+            '#4ECDC4', // 青绿色
+            '#FFD166', // 黄色
+            '#06D6A0', // 绿色
+            '#118AB2', // 蓝色
+            '#9D4EDD'  // 紫色
         ];
 
         // 全局变量
@@ -463,9 +595,97 @@
         let canvas, ctx;
         let draggedCard = null;
         let dragOffsetX = 0, dragOffsetY = 0;
+        let isTouchDevice = false;
+        let lastTouchTime = 0;
 
-        // DOM 加载完成后初始化
+        // 颜色对比度计算工具
+        const ColorUtils = {
+            // 将十六进制颜色转换为RGB
+            hexToRgb: function(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null;
+            },
+            
+            // 计算颜色的亮度（相对亮度公式）
+            getLuminance: function(r, g, b) {
+                const a = [r, g, b].map(function(v) {
+                    v /= 255;
+                    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+                });
+                return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+            },
+            
+            // 计算两种颜色之间的对比度
+            getContrastRatio: function(color1, color2) {
+                const rgb1 = this.hexToRgb(color1);
+                const rgb2 = this.hexToRgb(color2);
+                
+                if (!rgb1 || !rgb2) return 1;
+                
+                const lum1 = this.getLuminance(rgb1.r, rgb1.g, rgb1.b);
+                const lum2 = this.getLuminance(rgb2.r, rgb2.g, rgb2.b);
+                
+                const brightest = Math.max(lum1, lum2);
+                const darkest = Math.min(lum1, lum2);
+                
+                return (brightest + 0.05) / (darkest + 0.05);
+            },
+            
+            // 判断颜色是否为深色
+            isDarkColor: function(hexColor) {
+                const rgb = this.hexToRgb(hexColor);
+                if (!rgb) return false;
+                
+                // 计算亮度（YIQ公式）
+                const yiq = ((rgb.r * 299) + (rgb.g * 587) + (rgb.b * 114)) / 1000;
+                return yiq < 128;
+            },
+            
+            // 获取与背景色高对比度的文本颜色
+            getOptimizedTextColor: function(backgroundColor) {
+                const black = '#000000';
+                const white = '#FFFFFF';
+                
+                // 计算与黑色和白色的对比度
+                const contrastWithBlack = this.getContrastRatio(backgroundColor, black);
+                const contrastWithWhite = this.getContrastRatio(backgroundColor, white);
+                
+                // 选择对比度更高的颜色
+                if (contrastWithBlack >= contrastWithWhite && contrastWithBlack >= 4.5) {
+                    return black;
+                } else if (contrastWithWhite >= 4.5) {
+                    return white;
+                } else {
+                    // 如果对比度都不够，使用调整后的颜色
+                    return this.getEnhancedContrastColor(backgroundColor);
+                }
+            },
+            
+            // 获取增强对比度的颜色
+            getEnhancedContrastColor: function(backgroundColor) {
+                const rgb = this.hexToRgb(backgroundColor);
+                if (!rgb) return '#000000';
+                
+                // 计算背景亮度
+                const luminance = this.getLuminance(rgb.r, rgb.g, rgb.b);
+                
+                // 如果背景较亮，返回深灰色；如果背景较暗，返回浅灰色
+                if (luminance > 0.5) {
+                    return '#222222';
+                } else {
+                    return '#EEEEEE';
+                }
+            }
+        };
+
+        // 应用初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 检测是否为触摸设备
+            isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
             initApp();
         });
 
@@ -488,8 +708,9 @@
 
         // 调整Canvas大小
         function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+            const container = document.querySelector('.content');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
             draw();
         }
 
@@ -497,27 +718,34 @@
         function createCards() {
             const container = document.getElementById('cardsContainer');
             
-            // 初始位置（网格布局）
+            // 为iPhone 13 Mini横屏优化的初始位置
             const positions = [
                 { left: 5, top: 10 },   // 卡片1
-                { left: 25, top: 10 },  // 卡片2
-                { left: 45, top: 10 },  // 卡片3
-                { left: 65, top: 10 },  // 卡片4
-                { left: 85, top: 10 },  // 卡片5
-                { left: 5, top: 40 },   // 卡片6
-                { left: 25, top: 40 },  // 卡片7
-                { left: 45, top: 40 },  // 卡片8
-                { left: 65, top: 40 },  // 卡片9
-                { left: 85, top: 40 }   // 卡片10
+                { left: 30, top: 10 },  // 卡片2
+                { left: 55, top: 10 },  // 卡片3
+                { left: 80, top: 10 },  // 卡片4
+                { left: 5, top: 35 },   // 卡片5
+                { left: 30, top: 35 },  // 卡片6
+                { left: 55, top: 35 },  // 卡片7
+                { left: 80, top: 35 },  // 卡片8
+                { left: 5, top: 60 },   // 卡片9
+                { left: 30, top: 60 }   // 卡片10
             ];
             
             cardsData.forEach((cardData, index) => {
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.id = `card-${cardData.id}`;
+                
+                // 使用百分比定位适应不同屏幕
                 card.style.left = `${positions[index].left}%`;
                 card.style.top = `${positions[index].top}%`;
-                card.style.backgroundColor = colorOptions[index % colorOptions.length];
+                const backgroundColor = colorOptions[index % colorOptions.length];
+                card.style.backgroundColor = backgroundColor;
+                
+                // 计算文本颜色（与背景形成高对比度）
+                const titleColor = ColorUtils.getOptimizedTextColor(backgroundColor);
+                const subtitleColor = ColorUtils.isDarkColor(backgroundColor) ? '#CCCCCC' : '#555555';
                 
                 // 创建2行3列的颜色选择器
                 let colorPickerHTML = '<div class="color-picker">';
@@ -553,16 +781,16 @@
                 card.innerHTML = `
                     <div class="card-header">
                         <div>
-                            <div class="card-title">${cardData.title}</div>
-                            <div class="card-subtitle">${cardData.subtitle}</div>
+                            <div class="card-title" style="color: ${titleColor}">${cardData.title}</div>
+                            <div class="card-subtitle" style="color: ${subtitleColor}">${cardData.subtitle}</div>
                         </div>
                     </div>
                     ${colorPickerHTML}
                     <div class="connection-points">
-                        <div class="connection-point" data-side="top" style="top: 0; left: 50%;"></div>
-                        <div class="connection-point" data-side="right" style="top: 50%; left: 100%;"></div>
-                        <div class="connection-point" data-side="bottom" style="top: 100%; left: 50%;"></div>
-                        <div class="connection-point" data-side="left" style="top: 50%; left: 0;"></div>
+                        <div class="connection-point" data-side="top" style="top: 0; left: 50%;" title="上边中点"></div>
+                        <div class="connection-point" data-side="right" style="top: 50%; left: 100%;" title="右边中点"></div>
+                        <div class="connection-point" data-side="bottom" style="top: 100%; left: 50%;" title="下边中点"></div>
+                        <div class="connection-point" data-side="left" style="top: 50%; left: 0%;" title="左边中点"></div>
                     </div>
                 `;
                 
@@ -576,24 +804,69 @@
                     subtitle: cardData.subtitle,
                     x: positions[index].left,
                     y: positions[index].top,
-                    color: colorOptions[index % colorOptions.length],
-                    width: 180,
-                    height: 140
+                    color: backgroundColor,
+                    titleColor: titleColor,
+                    subtitleColor: subtitleColor,
+                    width: 150,
+                    height: 130
                 });
                 
                 // 添加卡片事件监听
                 addCardEventListeners(card, cardData.id);
             });
             
-            // 创建一些示例连线
+            // 创建示例连线
             createExampleConnections();
+        }
+
+        // 更新卡片文本颜色
+        function updateCardTextColors(cardElement, backgroundColor, cardId) {
+            // 计算新的文本颜色
+            const titleColor = ColorUtils.getOptimizedTextColor(backgroundColor);
+            const subtitleColor = ColorUtils.isDarkColor(backgroundColor) ? '#CCCCCC' : '#555555';
+            
+            // 更新卡片元素样式
+            const titleElement = cardElement.querySelector('.card-title');
+            const subtitleElement = cardElement.querySelector('.card-subtitle');
+            
+            if (titleElement) {
+                titleElement.style.color = titleColor;
+            }
+            
+            if (subtitleElement) {
+                subtitleElement.style.color = subtitleColor;
+            }
+            
+            // 更新卡片数据
+            const card = cards.find(c => c.id === cardId);
+            if (card) {
+                card.titleColor = titleColor;
+                card.subtitleColor = subtitleColor;
+            }
+        }
+
+        // 更新状态指示器
+        function updateStatusIndicator(message, icon = 'fa-mouse-pointer') {
+            const indicator = document.getElementById('statusIndicator');
+            if (indicator) {
+                indicator.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
+                
+                // 如果是删除模式，改变颜色
+                if (isDeletingLine) {
+                    indicator.style.backgroundColor = 'rgba(231, 76, 60, 0.9)';
+                    indicator.style.color = 'white';
+                } else {
+                    indicator.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                    indicator.style.color = '#1a2980';
+                }
+            }
         }
 
         // 添加卡片事件监听
         function addCardEventListeners(cardElement, cardId) {
             // 拖拽开始
             cardElement.addEventListener('mousedown', startDrag);
-            cardElement.addEventListener('touchstart', startDragTouch);
+            cardElement.addEventListener('touchstart', startDragTouch, { passive: false });
             
             // 颜色选择
             const colorOptions = cardElement.querySelectorAll('.color-option');
@@ -602,6 +875,9 @@
                     e.stopPropagation();
                     const color = this.getAttribute('data-color');
                     cardElement.style.backgroundColor = color;
+                    
+                    // 更新卡片文本颜色
+                    updateCardTextColors(cardElement, color, cardId);
                     
                     // 更新卡片数据
                     const card = cards.find(c => c.id === cardId);
@@ -615,6 +891,11 @@
                     
                     draw();
                 });
+                
+                // 为触摸设备添加触摸事件
+                option.addEventListener('touchstart', function(e) {
+                    e.stopPropagation();
+                }, { passive: true });
             });
             
             // 连接点点击事件
@@ -632,17 +913,17 @@
                 
                 point.addEventListener('touchstart', function(e) {
                     e.stopPropagation();
-                });
+                }, { passive: true });
             });
         }
 
-        // 开始拖拽（鼠标）
+        // 开始拖拽
         function startDrag(e) {
             if (isDrawingLine || isDeletingLine) return;
             
+            e.preventDefault();
             draggedCard = e.currentTarget;
             const cardId = parseInt(draggedCard.id.split('-')[1]);
-            const card = cards.find(c => c.id === cardId);
             
             // 计算偏移量
             const rect = draggedCard.getBoundingClientRect();
@@ -654,16 +935,24 @@
             document.addEventListener('mousemove', drag);
             document.addEventListener('mouseup', stopDrag);
             
-            e.preventDefault();
+            updateStatusIndicator('拖动卡片移动位置', 'fa-arrows-alt');
         }
 
         // 开始拖拽（触摸）
         function startDragTouch(e) {
             if (isDrawingLine || isDeletingLine) return;
             
+            // 防止双击
+            const now = Date.now();
+            if (now - lastTouchTime < 300) {
+                lastTouchTime = now;
+                return;
+            }
+            lastTouchTime = now;
+            
+            e.preventDefault();
             draggedCard = e.currentTarget;
             const cardId = parseInt(draggedCard.id.split('-')[1]);
-            const card = cards.find(c => c.id === cardId);
             
             const touch = e.touches[0];
             const rect = draggedCard.getBoundingClientRect();
@@ -672,16 +961,17 @@
             
             draggedCard.classList.add('dragging');
             
-            document.addEventListener('touchmove', dragTouch);
+            document.addEventListener('touchmove', dragTouch, { passive: false });
             document.addEventListener('touchend', stopDragTouch);
             
-            e.preventDefault();
+            updateStatusIndicator('拖动卡片移动位置', 'fa-arrows-alt');
         }
 
-        // 拖拽（鼠标）
+        // 拖拽
         function drag(e) {
             if (!draggedCard) return;
             
+            e.preventDefault();
             const containerRect = document.querySelector('.content').getBoundingClientRect();
             const cardWidth = draggedCard.offsetWidth;
             const cardHeight = draggedCard.offsetHeight;
@@ -713,6 +1003,7 @@
         function dragTouch(e) {
             if (!draggedCard) return;
             
+            e.preventDefault();
             const touch = e.touches[0];
             const containerRect = document.querySelector('.content').getBoundingClientRect();
             const cardWidth = draggedCard.offsetWidth;
@@ -741,7 +1032,7 @@
             draw();
         }
 
-        // 停止拖拽（鼠标）
+        // 停止拖拽
         function stopDrag() {
             if (draggedCard) {
                 draggedCard.classList.remove('dragging');
@@ -750,6 +1041,8 @@
             
             document.removeEventListener('mousemove', drag);
             document.removeEventListener('mouseup', stopDrag);
+            
+            updateStatusIndicator('选择连接点创建连线', 'fa-mouse-pointer');
         }
 
         // 停止拖拽（触摸）
@@ -761,12 +1054,14 @@
             
             document.removeEventListener('touchmove', dragTouch);
             document.removeEventListener('touchend', stopDragTouch);
+            
+            updateStatusIndicator('选择连接点创建连线', 'fa-mouse-pointer');
         }
 
         // 处理连接点点击
         function handleConnectionPointClick(cardId, side) {
             if (isDeletingLine) {
-                // 删除连线模式 - 通过点击连线来删除
+                // 删除连线模式
                 return;
             }
             
@@ -785,6 +1080,8 @@
                 document.querySelectorAll('.connection-point').forEach(p => {
                     p.style.backgroundColor = 'rgba(26, 41, 128, 0.9)';
                 });
+                
+                updateStatusIndicator('选择另一个连接点完成连线', 'fa-project-diagram');
             } else {
                 // 结束画线
                 if (currentLineStart.cardId === cardId) {
@@ -796,6 +1093,9 @@
                     document.querySelectorAll('.connection-point').forEach(p => {
                         p.style.backgroundColor = 'rgba(26, 41, 128, 0.7)';
                     });
+                    
+                    updateStatusIndicator('不能连接同一个卡片', 'fa-exclamation-triangle');
+                    setTimeout(() => updateStatusIndicator('选择连接点创建连线', 'fa-mouse-pointer'), 2000);
                     return;
                 }
                 
@@ -809,7 +1109,8 @@
                     toSide: side,
                     type: selectedLineType,
                     annotation: annotation,
-                    color: '#1a2980'
+                    color: '#1a2980',
+                    timestamp: Date.now()
                 };
                 
                 connections.push(newConnection);
@@ -825,6 +1126,10 @@
                 document.querySelectorAll('.connection-point').forEach(p => {
                     p.style.backgroundColor = 'rgba(26, 41, 128, 0.7)';
                 });
+                
+                // 更新状态
+                updateStatusIndicator('连线创建成功', 'fa-check-circle');
+                setTimeout(() => updateStatusIndicator('选择连接点创建连线', 'fa-mouse-pointer'), 2000);
                 
                 // 重新绘制
                 draw();
@@ -867,7 +1172,6 @@
 
         // 创建示例连线
         function createExampleConnections() {
-            // 添加一些示例连线
             connections = [
                 {
                     id: 1,
@@ -876,7 +1180,7 @@
                     to: 6,
                     toSide: 'top',
                     type: 'straight-arrow',
-                    annotation: '决定工作范围',
+                    annotation: '进度决定范围',
                     color: '#1a2980'
                 },
                 {
@@ -886,7 +1190,7 @@
                     to: 9,
                     toSide: 'left',
                     type: 'straight-arrow',
-                    annotation: '影响成本',
+                    annotation: '范围影响成本',
                     color: '#FF6B6B'
                 },
                 {
@@ -896,18 +1200,8 @@
                     to: 6,
                     toSide: 'right',
                     type: 'straight-double-arrow',
-                    annotation: '相互影响',
+                    annotation: '质量与范围相互影响',
                     color: '#06D6A0'
-                },
-                {
-                    id: 4,
-                    from: 10,
-                    fromSide: 'bottom',
-                    to: 9,
-                    toSide: 'top',
-                    type: 'polyline-arrow',
-                    annotation: '增加成本风险',
-                    color: '#9D4EDD'
                 }
             ];
         }
@@ -955,11 +1249,6 @@
             // 绘制注释文字
             if (conn.annotation) {
                 drawAnnotation(startPos, endPos, conn.annotation, conn.type.includes('polyline'));
-            }
-            
-            // 如果处于删除模式，添加悬停效果
-            if (isDeletingLine) {
-                // 在实际应用中，可以添加悬停检测
             }
         }
 
@@ -1014,7 +1303,7 @@
 
         // 绘制箭头
         function drawArrow(from, to, isDouble) {
-            const headlen = 15;
+            const headlen = 12;
             const dx = to.x - from.x;
             const dy = to.y - from.y;
             const angle = Math.atan2(dy, dx);
@@ -1035,27 +1324,27 @@
 
         // 绘制注释
         function drawAnnotation(start, end, text, isPolyline) {
+            if (!text) return;
+            
             let x, y;
             
             if (isPolyline) {
-                // 折线注释放在中间
                 x = (start.x + end.x) / 2;
-                y = (start.y + end.y) / 2 - 10;
+                y = (start.y + end.y) / 2 - 8;
             } else {
-                // 直线注释放在中间
                 x = (start.x + end.x) / 2;
-                y = (start.y + end.y) / 2 - 10;
+                y = (start.y + end.y) / 2 - 8;
             }
             
-            ctx.font = '12px Arial';
+            ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
             ctx.fillStyle = '#333';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
             // 绘制文字背景
             const textWidth = ctx.measureText(text).width;
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.fillRect(x - textWidth/2 - 5, y - 10, textWidth + 10, 20);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(x - textWidth/2 - 4, y - 8, textWidth + 8, 16);
             
             // 绘制文字
             ctx.fillStyle = '#333';
@@ -1064,13 +1353,13 @@
 
         // 绘制预览线
         function drawPreviewLine() {
-            // 获取鼠标位置
-            const mouseX = canvas.width / 2; // 简化处理，实际应该获取鼠标位置
+            // 获取鼠标/触摸位置
+            const mouseX = canvas.width / 2;
             const mouseY = canvas.height / 2;
             
             ctx.strokeStyle = 'rgba(255, 107, 107, 0.7)';
             ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]);
+            ctx.setLineDash([4, 4]);
             
             ctx.beginPath();
             ctx.moveTo(currentLineStart.x, currentLineStart.y);
@@ -1097,6 +1386,12 @@
                     this.classList.add('active');
                     selectedLineType = this.getAttribute('data-type');
                 });
+                
+                // 触摸设备优化
+                btn.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    this.click();
+                }, { passive: false });
             });
             
             // 帮助按钮
@@ -1119,14 +1414,20 @@
                     this.style.backgroundColor = '#2ecc71';
                     this.innerHTML = '<i class="fas fa-check-circle"></i> 选择要删除的连线';
                     
+                    updateStatusIndicator('点击要删除的连线', 'fa-trash-alt');
+                    
                     // 添加点击连线删除功能
                     canvas.addEventListener('click', handleLineClickForDeletion);
+                    canvas.addEventListener('touchstart', handleLineClickForDeletion, { passive: false });
                 } else {
                     this.style.backgroundColor = '#e74c3c';
                     this.innerHTML = '<i class="fas fa-trash-alt"></i> 删除连线';
                     
+                    updateStatusIndicator('选择连接点创建连线', 'fa-mouse-pointer');
+                    
                     // 移除点击连线删除功能
                     canvas.removeEventListener('click', handleLineClickForDeletion);
+                    canvas.removeEventListener('touchstart', handleLineClickForDeletion);
                 }
             });
             
@@ -1152,23 +1453,60 @@
                     e.target.style.display = 'none';
                 }
             });
+            
+            // 触摸设备优化：触摸外部关闭模态框
+            window.addEventListener('touchstart', function(e) {
+                if (e.target.classList.contains('modal')) {
+                    e.target.style.display = 'none';
+                }
+            });
+            
+            // 防止页面滚动
+            document.addEventListener('touchmove', function(e) {
+                if (e.target.classList.contains('modal-content') || e.target.closest('.modal-content')) {
+                    return;
+                }
+                e.preventDefault();
+            }, { passive: false });
+            
+            // 处理键盘弹出
+            window.addEventListener('resize', function() {
+                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                    setTimeout(() => {
+                        document.activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                }
+            });
+            
+            // 阻止默认拖拽行为
+            document.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+            
+            document.addEventListener('drop', function(e) {
+                e.preventDefault();
+            });
         }
 
         // 处理连线点击以删除
         function handleLineClickForDeletion(e) {
-            // 在实际应用中，这里需要检测点击位置是否在连线上
-            // 简化处理：删除最后一条连线
             if (connections.length > 0) {
                 connections.pop();
                 draw();
+                updateStatusIndicator('连线已删除', 'fa-trash-alt');
+                setTimeout(() => updateStatusIndicator('点击要删除的连线', 'fa-trash-alt'), 1000);
+            }
+            
+            if (isTouchDevice) {
+                e.preventDefault();
             }
         }
 
         // 导出为JPG
         function exportAsJPG() {
-            // 在实际应用中，可以使用html2canvas库来截图整个游戏区域
-            // 这里简化处理，提示用户截图
-            alert('在真实部署中，这里会使用html2canvas库将整个游戏区域转换为JPG图片并下载。\n\n当前为演示版本，请使用浏览器截图功能（Ctrl+Shift+S）保存页面为图片。');
+            // 在实际部署中，可以使用html2canvas库
+            // 这里简化处理，提供使用说明
+            alert('在真实部署中，这里会使用html2canvas库将整个游戏区域转换为JPG图片并下载。\n\n当前为演示版本，请使用以下方法保存图片：\n1. 在iPhone上：同时按下侧边按钮和调高音量按钮截图\n2. 然后点击左下角的缩略图，选择"存储到文件"或"保存到照片"\n3. 或者使用浏览器的"分享"功能保存截图');
             document.getElementById('exportModal').style.display = 'none';
         }
 
@@ -1176,16 +1514,26 @@
         function exportAsXML() {
             // 创建XML结构
             let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-            xml += '<project-management-ship>\n';
+            xml += '<project-management-ship created="' + new Date().toISOString() + '">\n';
+            
+            // 添加元数据
+            xml += '  <metadata>\n';
+            xml += '    <title>项目管理之舟图表</title>\n';
+            xml += '    <created>' + new Date().toLocaleString() + '</created>\n';
+            xml += '    <cardsCount>' + cards.length + '</cardsCount>\n';
+            xml += '    <connectionsCount>' + connections.length + '</connectionsCount>\n';
+            xml += '  </metadata>\n';
             
             // 添加卡片数据
             xml += '  <cards>\n';
             cards.forEach(card => {
                 xml += `    <card id="${card.id}">\n`;
-                xml += `      <title>${card.title}</title>\n`;
-                xml += `      <subtitle>${card.subtitle}</subtitle>\n`;
+                xml += `      <title><![CDATA[${card.title}]]></title>\n`;
+                xml += `      <subtitle><![CDATA[${card.subtitle}]]></subtitle>\n`;
                 xml += `      <position x="${card.x.toFixed(2)}" y="${card.y.toFixed(2)}" />\n`;
                 xml += `      <color>${card.color}</color>\n`;
+                xml += `      <titleColor>${card.titleColor}</titleColor>\n`;
+                xml += `      <subtitleColor>${card.subtitleColor}</subtitleColor>\n`;
                 xml += `    </card>\n`;
             });
             xml += '  </cards>\n';
@@ -1197,7 +1545,7 @@
                 xml += `      <from card="${conn.from}" side="${conn.fromSide}" />\n`;
                 xml += `      <to card="${conn.to}" side="${conn.toSide}" />\n`;
                 xml += `      <type>${conn.type}</type>\n`;
-                xml += `      <annotation>${conn.annotation}</annotation>\n`;
+                xml += `      <annotation><![CDATA[${conn.annotation}]]></annotation>\n`;
                 xml += `      <color>${conn.color}</color>\n`;
                 xml += `    </connection>\n`;
             });
@@ -1206,11 +1554,11 @@
             xml += '</project-management-ship>';
             
             // 创建下载链接
-            const blob = new Blob([xml], { type: 'application/xml' });
+            const blob = new Blob([xml], { type: 'application/xml;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = '项目管理之舟-图表.xml';
+            a.download = '项目管理之舟-' + new Date().toISOString().slice(0, 10) + '.xml';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
